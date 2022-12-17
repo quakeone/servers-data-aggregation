@@ -1,5 +1,7 @@
-﻿using Microsoft.Extensions.Hosting;
+﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using ServerDataAggregation.Persistence;
 
 namespace ServersDataAggregation.Service.Scheduler;
 
@@ -16,41 +18,44 @@ public class ScheduleDispatcher : IHostedService
     private bool _stop = true;
     private Timer _timer;
     private List<ScheduledTask> _scheduledtasks;
-    
+    private PersistenceContext _dbContext;
     public ScheduleDispatcher(
         ILogger<ScheduleDispatcher> logger,
         IHostApplicationLifetime appLifetime)
     {
+        _dbContext = new PersistenceContext();
+        // migrate any database changes on startup (includes initial db creation)
+        _dbContext.Database.Migrate();
         _logger = logger;
-
-
-
+        _dbContext.Servers.Add(new ServerDataAggregation.Persistence.Models.Server { Active = true });
+        _dbContext.SaveChanges();
         // Add Queries schedule task 
-        QSB.Server.ServerQueryController queryController = new QSB.Server.ServerQueryController(
-            pDataSessionFactory
-            , new QSB.GameServerInterface.ServerInterface()
-            );
+        //var queryController = new Server.ServerQueryController(
+        //    pDataSessionFactory
+        //    , new QSB.GameServerInterface.ServerInterface()
+        //    );
 
-        var queryTask = new ScheduledTask(
-            queryController
-            , new Task(queryController.DoQueries)
-            , "Query Thread"
-            , new IntervalSchedule(3));
+        //var queryTask = new ScheduledTask(
+        //    queryController
+        //    , new Task(queryController.DoQueries)
+        //    , "Query Thread"
+        //    , new IntervalSchedule(3));
 
-        // For Reporting and Rollup tables - scheduled task(s)
-        QSB.Server.ServerManager serverManager = new QSB.Server.ServerManager(pDataSessionFactory);
+        //// For Reporting and Rollup tables - scheduled task(s)
+        //QSB.Server.ServerManager serverManager = new QSB.Server.ServerManager(pDataSessionFactory);
 
-        var aggregatorTask = new ScheduledTask(
-            serverManager
-            , new QSB.Common.TaskScheduling.Task(serverManager.SavePreviousDaysHistoricalSummery)
-            , "HistoricalHourlySummery"
-            , new QSB.Common.TaskScheduling.TimeOfDaySchedule(new TimeSpan(0, 1, 0)));
+        //var aggregatorTask = new ScheduledTask(
+        //    serverManager
+        //    , new QSB.Common.TaskScheduling.Task(serverManager.SavePreviousDaysHistoricalSummery)
+        //    , "HistoricalHourlySummery"
+        //    , new QSB.Common.TaskScheduling.TimeOfDaySchedule(new TimeSpan(0, 1, 0)));
 
-        _scheduledtasks = new List<ScheduledTask>()
-        {
-            queryTask,
-            aggregatorTask
-        }
+        //_scheduledtasks = new List<ScheduledTask>()
+        //{
+        //    queryTask,
+        //    aggregatorTask
+        //};
+        _scheduledtasks = new List<ScheduledTask>();
     }
 
     public void AddTask(ScheduledTask pTask)

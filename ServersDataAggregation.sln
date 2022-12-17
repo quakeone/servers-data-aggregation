@@ -3,15 +3,15 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.1.32319.34
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServersDataAggregation.App", "ServersDataAggregation.App\ServersDataAggregation.App.csproj", "{25EB8F9F-749B-4861-8341-008809E2046B}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ServersDataAggregation.App", "ServersDataAggregation.App\ServersDataAggregation.App.csproj", "{25EB8F9F-749B-4861-8341-008809E2046B}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServersDataAggregation.Query", "ServerDataAggregation.Query\ServersDataAggregation.Query.csproj", "{7B67230F-A9F8-4844-BAFA-E49C2DDDB799}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ServersDataAggregation.Query", "ServerDataAggregation.Query\ServersDataAggregation.Query.csproj", "{7B67230F-A9F8-4844-BAFA-E49C2DDDB799}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServerDataAggregation.Persistence", "ServerDataAggregation.Persistence\ServerDataAggregation.Persistence.csproj", "{CF15D21F-8102-45EA-A105-A1F187D921C3}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ServerDataAggregation.Persistence", "ServerDataAggregation.Persistence\ServerDataAggregation.Persistence.csproj", "{CF15D21F-8102-45EA-A105-A1F187D921C3}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServersDataAggregation.Service", "ServersDataAggregation.Service\ServersDataAggregation.Service.csproj", "{219F6069-F3AB-4B11-8A3D-56A82089B64F}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ServersDataAggregation.Service", "ServersDataAggregation.Service\ServersDataAggregation.Service.csproj", "{219F6069-F3AB-4B11-8A3D-56A82089B64F}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServersDataAggregation.Common", "ServersDataAggregation.Interface\ServersDataAggregation.Common.csproj", "{FC711A43-C6E1-4D46-892E-D9F345438FB2}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ServersDataAggregation.Common", "ServersDataAggregation.Interface\ServersDataAggregation.Common.csproj", "{FC711A43-C6E1-4D46-892E-D9F345438FB2}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

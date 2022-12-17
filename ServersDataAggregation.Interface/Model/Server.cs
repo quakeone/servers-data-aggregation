@@ -16,7 +16,7 @@ namespace ServersDataAggregation.Common.Model
         /// <summary>
         /// Server Name received from server query
         /// </summary>
-        public string ServerName { get; private set; }
+        public string Name { get; private set; }
         /// <summary>
         /// Server Name specified inside of the database defined at setup
         /// </summary>
@@ -74,7 +74,7 @@ namespace ServersDataAggregation.Common.Model
         /// </summary>
         public string Map { get; private set; }
         /// <summary>
-        /// XML String representing Settings received from server
+        /// JSON String representing Settings received from server
         /// </summary>
         public string ServerSettings { get; private set; }
         /// <summary>
@@ -89,10 +89,6 @@ namespace ServersDataAggregation.Common.Model
         /// Number of maximum players the server supports received from server
         /// </summary>
         public int MaxPlayers { get; private set; }
-        /// <summary>
-        /// List of current players
-        /// </summary>
-        public List<Player> Players { get; private set; }
         /// <summary>
         /// Status of server from last query
         /// </summary>

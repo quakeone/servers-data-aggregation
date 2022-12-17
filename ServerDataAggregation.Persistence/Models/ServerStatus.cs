@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 using System.Text;
@@ -11,9 +12,11 @@ namespace ServerDataAggregation.Persistence.Models
     public class ServerStatus
     {
         [Column("server_status_id")]
+        [Key]
         public virtual int ServerStatusId { get; set; }
         [Column("server_id")]
         public virtual int ServerId { get; set; }
+        public Server Server { get; set; }
         [Column("timestamp")]
         public virtual DateTime TimeStamp { get; set; }
         [Column("map")]

@@ -7,8 +7,8 @@ services:
     # volumes: 
     #   - db_volume:/var/lib/postgresql/data
     environment: 
-      POSGRES_USER: "docker"
-      POSTGRES_PASSWORD : "docker"
-      POSGRES_DB: "servers"
+      POSTGRES_USER: "docker"
+      POSTGRES_PASSWORD: "docker"
+      POSTGRES_DB: "servers"
 # volumes: 
 #   db_volume:

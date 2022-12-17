@@ -1,4 +1,4 @@
-﻿namespace ServersDataAggregation.Service.Scheduler;
+﻿    namespace ServersDataAggregation.Service.Scheduler;
 
 public delegate void ScheduledTaskFn();
 

@@ -20,6 +20,7 @@ namespace ServerDataAggregation.Persistence.Models
         public List<PlayerSnapshot> Players { get; set; }
     }
 
+    [NotMapped]
     public class PlayerSnapshot
     {
         /// <summary>
