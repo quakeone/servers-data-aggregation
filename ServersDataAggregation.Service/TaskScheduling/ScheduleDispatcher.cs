@@ -26,6 +26,7 @@ public class ScheduleDispatcher : IHostedService
         _dbContext = new PersistenceContext();
         // migrate any database changes on startup (includes initial db creation)
         _dbContext.Database.Migrate();
+        _dbContext.Database.EnsureCreated();
         _logger = logger;
         _dbContext.Servers.Add(new ServerDataAggregation.Persistence.Models.Server { Active = true });
         _dbContext.SaveChanges();

@@ -20,7 +20,10 @@ namespace ServerDataAggregation.Persistence
         protected override void OnConfiguring(DbContextOptionsBuilder options)
         {
             // options.UseSqlite($"Data Source={DbPath}");
-            options.UseNpgsql($"Host=localhost; Database = servers; Port = 5555; User id = docker; Password = docker");
+            options.UseNpgsql(
+                $"Host=localhost; Database = servers; Port = 5555; User id = docker; Password = docker",
+                x => x.MigrationsAssembly("ServerDataAggregation.Persistence")
+            );
         }
     }
 }
