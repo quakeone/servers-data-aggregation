@@ -1,6 +1,6 @@
 ﻿namespace ServersDataAggregation.Common.Model
 {
-    internal class Player
+    public class Player
     {
         /// <summary>
         /// Text friendly name of Player

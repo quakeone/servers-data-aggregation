@@ -6,4 +6,14 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\ServersDataAggregation.Interface\ServersDataAggregation.Common.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="BouncyCastle.Crypto">
+      <HintPath>..\lib\BouncyCastle.Crypto.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+
 </Project>
