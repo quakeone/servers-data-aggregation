@@ -1,5 +1,7 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using ServerDataAggregation.Persistence;
 using ServersDataAggregation.Service;
 using ServersDataAggregation.Service.Scheduler;
 

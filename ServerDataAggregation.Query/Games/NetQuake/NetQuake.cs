@@ -1,7 +1,8 @@
 ﻿using ServersDataAggregation.Common.Model;
+using ServersDataAggregation.Query.Games.NetQuake.Packets;
 using System.Text;
 
-namespace ServersDataAggregation.Query.Games.NetQuake.Packets;
+namespace ServersDataAggregation.Query.Games.NetQuake;
 
 public class NetQuake : IServerInfoProvider
 {
@@ -27,11 +28,11 @@ public class NetQuake : IServerInfoProvider
             ServerName = serverInfoReply.HostName,
             Map = serverInfoReply.MapName,
             MaxPlayerCount = (int)serverInfoReply.MaxPlayers,
-            ServerVersion = serverInfoReply.GameProtocol.ToString(),
+            ServerVersion = serverInfoReply.GameProtocol.ToString()
         };
 
         string ruleName = string.Empty;
-
+        var serverRules = new List<ServerSetting>();
         do
         {
             bytesReceived = udp.SendBytes(new RuleInfoRequest(ruleName).GetPacket());
@@ -43,7 +44,7 @@ public class NetQuake : IServerInfoProvider
             if (string.IsNullOrEmpty(rulesInfoReply.RuleName))
                 break;
 
-            AddServerRule(rulesInfoReply, serverSnapshot);
+            serverRules.Add(new ServerSetting(rulesInfoReply.RuleName, rulesInfoReply.RuleValue));
             ruleName = rulesInfoReply.RuleName;
 
         } while (!string.IsNullOrEmpty(ruleName.Trim()));
@@ -64,15 +65,16 @@ public class NetQuake : IServerInfoProvider
             players.Add(CreatePlayerSnapshot(playerInfoReply));
         }
 
+        serverSnapshot.Port = udp.RemotePort;
+        serverSnapshot.IpAddress = udp.RemoteIpAddress;
+        serverSnapshot.Players = players.ToArray();
+        serverSnapshot.ServerSettings = serverRules.ToArray();
         var modMode = ModModeHelper.DeriveModMode(serverSnapshot.ServerSettings);
         if (modMode != null)
         {
             serverSnapshot.Mode = modMode.Mode;
             serverSnapshot.Mod = modMode.Mod;
         }
-        serverSnapshot.Port = udp.RemotePort;
-        serverSnapshot.IpAddress = udp.RemoteIpAddress;
-        serverSnapshot.Players = players.ToArray();
 
         return serverSnapshot;
     }
@@ -100,11 +102,6 @@ public class NetQuake : IServerInfoProvider
                 return reply;
         }
         return reply;
-    }
-
-    private void AddServerRule(RuleInfoReply pReplyPacket, ServerSnapshot pServerInfo)
-    {
-        pServerInfo.ServerSettings.Add(new ServerSetting(pReplyPacket.RuleName, pReplyPacket.RuleValue));
     }
 
     private PlayerSnapshot CreatePlayerSnapshot(PlayerInfoReply pReplyPacket)

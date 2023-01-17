@@ -1,7 +1,10 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Internal;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using ServerDataAggregation.Persistence;
+using ServersDataAggregation.Service.Tasks;
+using ServersDataAggregation.Service.Tasks.QueryServers;
 
 namespace ServersDataAggregation.Service.Scheduler;
 
@@ -18,29 +21,39 @@ public class ScheduleDispatcher : IHostedService
     private bool _stop = true;
     private Timer _timer;
     private List<ScheduledTask> _scheduledtasks;
-    private PersistenceContext _dbContext;
+
     public ScheduleDispatcher(
         ILogger<ScheduleDispatcher> logger,
         IHostApplicationLifetime appLifetime)
     {
-        _dbContext = new PersistenceContext();
-        // migrate any database changes on startup (includes initial db creation)
-        _dbContext.Database.Migrate();
-        _dbContext.Database.EnsureCreated();
+        using (var context = new PersistenceContext())
+        {
+            // migrate any database changes on startup (includes initial db creation)
+            context.Database.Migrate();
+            context.Database.EnsureCreated();
+        }
         _logger = logger;
-        _dbContext.Servers.Add(new ServerDataAggregation.Persistence.Models.Server { Active = true });
-        _dbContext.SaveChanges();
+
+        var synchronizeServers = new SynchronizeServers();
+
+        var sycnrhonizeServersTask = new ScheduledTask(
+              synchronizeServers.Execute
+            , "Servers Synchrnoize"
+            , new IntervalSchedule(60, new IntervalScheduleOptions{RunImmediately = true}));
+
+        //_dbContext.Servers.Add(new ServerDataAggregation.Persistence.Models.Server { Active = true });
+        //_dbContext.SaveChanges();
         // Add Queries schedule task 
         //var queryController = new Server.ServerQueryController(
         //    pDataSessionFactory
         //    , new QSB.GameServerInterface.ServerInterface()
         //    );
 
-        //var queryTask = new ScheduledTask(
-        //    queryController
-        //    , new Task(queryController.DoQueries)
-        //    , "Query Thread"
-        //    , new IntervalSchedule(3));
+        var queryServers = new QueryServers();
+        var queryTask = new ScheduledTask(
+            queryServers.Execute
+            , "Query Thread"
+            , new IntervalSchedule(3));
 
         //// For Reporting and Rollup tables - scheduled task(s)
         //QSB.Server.ServerManager serverManager = new QSB.Server.ServerManager(pDataSessionFactory);
@@ -51,12 +64,11 @@ public class ScheduleDispatcher : IHostedService
         //    , "HistoricalHourlySummery"
         //    , new QSB.Common.TaskScheduling.TimeOfDaySchedule(new TimeSpan(0, 1, 0)));
 
-        //_scheduledtasks = new List<ScheduledTask>()
-        //{
-        //    queryTask,
-        //    aggregatorTask
-        //};
-        _scheduledtasks = new List<ScheduledTask>();
+        _scheduledtasks = new List<ScheduledTask>()
+        {
+            queryTask,
+            sycnrhonizeServersTask
+        };
     }
 
     public void AddTask(ScheduledTask pTask)

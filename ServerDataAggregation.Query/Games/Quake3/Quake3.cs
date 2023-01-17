@@ -68,11 +68,12 @@ internal class Quake3 : IServerInfoProvider
             throw new FormatException("Q3 Player data was not in correct format");
         }
 
+        var serverSettings = new List<ServerSetting>();
         foreach (DictionaryEntry entry in pStatus.ServerSettings)
         {
-            sInfo.ServerSettings.Add(new ServerSetting(entry.Key.ToString(), entry.Value.ToString()));
+            serverSettings.Add(new ServerSetting(entry.Key.ToString(), entry.Value.ToString()));
         }
-
+        sInfo.ServerSettings = serverSettings.ToArray();
         return sInfo;
     }
 

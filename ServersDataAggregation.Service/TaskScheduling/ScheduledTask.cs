@@ -1,6 +1,6 @@
 ﻿    namespace ServersDataAggregation.Service.Scheduler;
 
-public delegate void ScheduledTaskFn();
+public delegate Task ScheduledTaskFn();
 
 public class ScheduledTask
 {
@@ -22,12 +22,6 @@ public class ScheduledTask
         TaskMethod = pTaskMethod;
     }
 
-    public ScheduledTask(Object pTaskObject, ScheduledTaskFn pTaskMethod, string pName, Schedule pInitialSchedule)
-        : this(pTaskMethod, pName, pInitialSchedule)
-    {
-        TaskObject = pTaskObject;
-    }
-
     public bool NeedsExecution()
     {
         for (int i = 0; i < Schedules.Count; i++) 
@@ -37,7 +31,7 @@ public class ScheduledTask
         return false;
     }
 
-    public void Execute()
+    public async Task Execute()
     {
         if (IsExecuting) return;
         IsExecuting = true;
@@ -47,7 +41,7 @@ public class ScheduledTask
 
         try
         {
-            TaskMethod.Invoke();
+            await TaskMethod.Invoke();
             PublishMessage("Execution complete");  
         }
         catch(Exception ex)

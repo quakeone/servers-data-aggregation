@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 using System.Text;
@@ -10,6 +11,7 @@ namespace ServerDataAggregation.Persistence.Models
     [Table("server")]
     public class Server
     {
+        [Key]
         [Column("server_id")]
         public virtual int ServerId { get; set; }
         [Column("game_id")]
@@ -18,11 +20,16 @@ namespace ServerDataAggregation.Persistence.Models
         public virtual int Port { get; set; }
         [Column("address")]
         public virtual string Address { get; set; }
-        [Column("location")]
         /// <summary>
-        /// Physical location of server
+        /// Country of server
         /// </summary>
-        public virtual string Location { get; set; }
+        [Column("country")]
+        public virtual string? Country { get; set; }
+        /// <summary>
+        /// Locality - location within country
+        /// </summary>
+        [Column("locality")]
+        public virtual string? Locality { get; set; }
         [Column("query_interval")]
         /// <summary>
         /// Seconds between each query interval (Minimum of 10 seconds)
@@ -32,21 +39,15 @@ namespace ServerDataAggregation.Persistence.Models
         public virtual int FailedQueryAttempts { get; set; }
         [Column("last_query")]
         public virtual DateTime? LastQuery { get; set; }
-        [Column("query_result")]
-        public virtual int QueryResult { get; set; }
-        [Column("next_query")]
-        public virtual DateTime? NextQuery { get; set; }
         [Column("last_query_success")]
         /// <summary>
         /// Last time a server was online or successfully queried
         /// </summary>
         public virtual DateTime? LastQuerySuccess { get; set; }
-
-        [Column("modification_code")]
-        public virtual string ModificationCode { get; set; }
-
-        [Column("hostname")]
-        public virtual string Hostname { get; set; }
+        [Column("query_result")]
+        public virtual int LastQueryResult { get; set; }
+        [Column("mod")]
+        public virtual string? Mod { get; set; }
 
         [Column("active")]
         public virtual bool Active { get; set; }
@@ -55,9 +56,9 @@ namespace ServerDataAggregation.Persistence.Models
         public virtual string ApiKey { get; set; }
 
         [Column("parameters")]
-        public virtual string Parameters { get; set; }
+        public virtual string? Parameters { get; set; }
         [Column("metadata")]
-        public virtual string Metadata { get; set; }
+        public virtual string? Metadata { get; set; }
 
         public override string ToString()
         {

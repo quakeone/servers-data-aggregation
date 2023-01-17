@@ -30,10 +30,10 @@ public static class ModModeHelper
         return null;
     }
 
-    public static ModMode? DeriveModMode(List<ServerSetting> settings)
+    public static ModMode? DeriveModMode(IEnumerable<ServerSetting> settings)
     {
         ModMode? mode;
-        var fraglimit = settings.Find(s => s.Setting.ToLower() == "fraglimit");
+        var fraglimit = settings.FirstOrDefault(s => s.Setting.ToLower() == "fraglimit");
         if (fraglimit != null)
         {
             mode = CRModMode(fraglimit);

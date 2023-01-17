@@ -18,6 +18,8 @@
 
   <ItemGroup>
     <ProjectReference Include="..\ServerDataAggregation.Persistence\ServerDataAggregation.Persistence.csproj" />
+    <ProjectReference Include="..\ServerDataAggregation.Query\ServersDataAggregation.Query.csproj" />
+    <ProjectReference Include="..\ServersDataAggregation.Interface\ServersDataAggregation.Common.csproj" />
   </ItemGroup>
 
 </Project>

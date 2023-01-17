@@ -11,7 +11,6 @@ namespace ServerDataAggregation.Persistence
     public class PersistenceContext : DbContext
     {
         public DbSet<Server> Servers { get; set; }
-        public DbSet<ServerStatus> ServerStatuses { get; set; }
         public DbSet<ServerSnapshot> ServerSnapshots { get; set; }
 
         // The following configures EF to create a Sqlite database file in the

@@ -33,7 +33,7 @@
         /// <summary>
         /// ServerSettings in Key/Value format
         /// </summary>
-        public List<ServerSetting> ServerSettings { get; set; }
+        public ServerSetting[] ServerSettings { get; set; }
         /// <summary>
         /// Collection of PlayerInfos representing player entities
         /// currently on the server

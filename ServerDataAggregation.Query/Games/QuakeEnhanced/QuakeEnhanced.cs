@@ -81,6 +81,7 @@ public class QuakeEnhanced : IServerInfoProvider
         };
 
         string ruleName = string.Empty;
+        var serverRules = new List<ServerSetting>();
 
         do
         {
@@ -93,7 +94,7 @@ public class QuakeEnhanced : IServerInfoProvider
             if (string.IsNullOrEmpty(rulesInfoReply.RuleName))
                 break;
 
-            AddServerRule(rulesInfoReply, serverInfo);
+            serverRules.Add(new ServerSetting(rulesInfoReply.RuleName, rulesInfoReply.RuleValue));
             ruleName = rulesInfoReply.RuleName;
 
         } while (!string.IsNullOrEmpty(ruleName.Trim()));
@@ -128,6 +129,8 @@ public class QuakeEnhanced : IServerInfoProvider
 
         serverInfo.Port = pServerPort;
         serverInfo.IpAddress = pServerAddress; // udp.RemoteIpAddress;
+        serverSnapshot.Players = players.ToArray();
+        serverInfo.ServerSettings = serverRules.ToArray();
 
         return serverInfo;
     }
@@ -155,11 +158,6 @@ public class QuakeEnhanced : IServerInfoProvider
                 return reply;
         }
         return reply;
-    }
-
-    private void AddServerRule(RuleInfoReply pReplyPacket, ServerSnapshot pServerInfo)
-    {
-        pServerInfo.ServerSettings.Add(new ServerSetting(pReplyPacket.RuleName, pReplyPacket.RuleValue));
     }
 
     private PlayerSnapshot CreatePlayerSnapshot(PlayerInfoReply pReplyPacket)

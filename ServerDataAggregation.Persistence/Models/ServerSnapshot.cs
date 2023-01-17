@@ -15,7 +15,23 @@ namespace ServerDataAggregation.Persistence.Models
         [Column("server_snapshot_id")]
         public int ServerSnapshotId { get; set; }
         [Column("server_id")]
-        public int ServerId { get; set; }   
+        public int ServerId { get; set; }
+        [Column("timestamp")]
+        public virtual DateTime TimeStamp { get; set; }
+        [Column("hostname")]
+        public virtual string Hostname { get; set; }
+        [Column("map")]
+        public virtual string Map { get; set; }
+        [Column("mod")]
+        public virtual string? Mod { get; set; }
+        [Column("mode")]
+        public virtual string? Mode { get; set; }
+        [Column("ip_address")]
+        public virtual string IpAddress { get; set; }
+        [Column("max_players")]
+        public virtual int MaxPlayers { get; set; }
+        [Column("server_settings")]
+        public virtual string ServerSettings { get; set; }
         [Column("players")]
         public List<PlayerSnapshot> Players { get; set; }
     }
@@ -24,13 +40,17 @@ namespace ServerDataAggregation.Persistence.Models
     public class PlayerSnapshot
     {
         /// <summary>
-        /// Player's Name (text)
+        /// Player's Name
         /// </summary>
         public string Name { get; set; }
         /// <summary>
-        /// Players'Name (bytes)
+        /// Color of shirt
         /// </summary>
-        public byte[] NameBytes { get; set; }
+        public int ShirtColor { get; set; }
+        /// <summary>
+        /// Color of pants
+        /// </summary>
+        public int PantColor { get; set; }
         /// <summary>
         /// Skin player is using
         /// </summary>
@@ -38,7 +58,7 @@ namespace ServerDataAggregation.Persistence.Models
         /// <summary>
         /// Model Player is using
         /// </summary>
-        public string Model { get; set; }
+        public string? Model { get; set; }
         /// <summary>
         /// Ping as reported by the server
         /// </summary>

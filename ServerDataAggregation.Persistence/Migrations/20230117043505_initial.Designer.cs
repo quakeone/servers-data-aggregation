@@ -12,14 +12,15 @@ using ServerDataAggregation.Persistence;
 namespace ServerDataAggregation.Persistence.Migrations
 {
     [DbContext(typeof(PersistenceContext))]
-    [Migration("20220411002523_initial")]
+    [Migration("20230117043505_initial")]
     partial class initial
     {
+        /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "6.0.3")
+                .HasAnnotation("ProductVersion", "7.0.2")
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
@@ -47,6 +48,10 @@ namespace ServerDataAggregation.Persistence.Migrations
                         .HasColumnType("text")
                         .HasColumnName("api_key");
 
+                    b.Property<string>("Country")
+                        .HasColumnType("text")
+                        .HasColumnName("country");
+
                     b.Property<int>("FailedQueryAttempts")
                         .HasColumnType("integer")
                         .HasColumnName("failed_query_attempts");
@@ -55,40 +60,35 @@ namespace ServerDataAggregation.Persistence.Migrations
                         .HasColumnType("integer")
                         .HasColumnName("game_id");
 
-                    b.Property<string>("Hostname")
-                        .IsRequired()
-                        .HasColumnType("text")
-                        .HasColumnName("hostname");
-
                     b.Property<DateTime?>("LastQuery")
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("last_query");
+
+                    b.Property<int>("LastQueryResult")
+                        .HasColumnType("integer")
+                        .HasColumnName("query_result");
 
                     b.Property<DateTime?>("LastQuerySuccess")
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("last_query_success");
 
-                    b.Property<string>("Location")
-                        .IsRequired()
+                    b.Property<string>("Locality")
                         .HasColumnType("text")
-                        .HasColumnName("location");
+                        .HasColumnName("locality");
 
                     b.Property<string>("Metadata")
-                        .IsRequired()
                         .HasColumnType("text")
                         .HasColumnName("metadata");
 
-                    b.Property<string>("ModificationCode")
-                        .IsRequired()
+                    b.Property<string>("Mod")
                         .HasColumnType("text")
-                        .HasColumnName("modification_code");
+                        .HasColumnName("mod");
 
                     b.Property<DateTime?>("NextQuery")
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("next_query");
 
                     b.Property<string>("Parameters")
-                        .IsRequired()
                         .HasColumnType("text")
                         .HasColumnName("parameters");
 
@@ -99,10 +99,6 @@ namespace ServerDataAggregation.Persistence.Migrations
                     b.Property<int>("QueryInterval")
                         .HasColumnType("integer")
                         .HasColumnName("query_interval");
-
-                    b.Property<int>("QueryResult")
-                        .HasColumnType("integer")
-                        .HasColumnName("query_result");
 
                     b.HasKey("ServerId");
 
@@ -117,24 +113,6 @@ namespace ServerDataAggregation.Persistence.Migrations
                         .HasColumnName("server_snapshot_id");
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("ServerSnapshotId"));
-
-                    b.Property<int>("ServerId")
-                        .HasColumnType("integer")
-                        .HasColumnName("server_id");
-
-                    b.HasKey("ServerSnapshotId");
-
-                    b.ToTable("server_snapshot");
-                });
-
-            modelBuilder.Entity("ServerDataAggregation.Persistence.Models.ServerStatus", b =>
-                {
-                    b.Property<int>("ServerStatusId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer")
-                        .HasColumnName("server_status_id");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("ServerStatusId"));
 
                     b.Property<string>("Hostname")
                         .IsRequired()
@@ -155,20 +133,13 @@ namespace ServerDataAggregation.Persistence.Migrations
                         .HasColumnType("integer")
                         .HasColumnName("max_players");
 
+                    b.Property<string>("Mod")
+                        .HasColumnType("text")
+                        .HasColumnName("mod");
+
                     b.Property<string>("Mode")
-                        .IsRequired()
                         .HasColumnType("text")
                         .HasColumnName("mode");
-
-                    b.Property<string>("Modification")
-                        .IsRequired()
-                        .HasColumnType("text")
-                        .HasColumnName("modification");
-
-                    b.Property<string>("Players")
-                        .IsRequired()
-                        .HasColumnType("text")
-                        .HasColumnName("players");
 
                     b.Property<int>("ServerId")
                         .HasColumnType("integer")
@@ -183,22 +154,9 @@ namespace ServerDataAggregation.Persistence.Migrations
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("timestamp");
 
-                    b.HasKey("ServerStatusId");
+                    b.HasKey("ServerSnapshotId");
 
-                    b.HasIndex("ServerId");
-
-                    b.ToTable("server_status");
-                });
-
-            modelBuilder.Entity("ServerDataAggregation.Persistence.Models.ServerStatus", b =>
-                {
-                    b.HasOne("ServerDataAggregation.Persistence.Models.Server", "Server")
-                        .WithMany()
-                        .HasForeignKey("ServerId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Server");
+                    b.ToTable("server_snapshot");
                 });
 #pragma warning restore 612, 618
         }
