@@ -67,16 +67,23 @@ internal class QueryServer
 
     public void DoQuery ()
     {
+        var now = DateTime.UtcNow;
         var snapshotResult = GetSnapshot();
         using (var context = new PersistenceContext())
         {
             context.Servers.Attach(_server);
+            _server.LastQuery = now;
             _server.LastQueryResult = (int)snapshotResult.Item2;
+
             var snapshot = snapshotResult.Item1;
 
-            if (snapshot != null)
+            if (snapshot == null)
             {
-                _server.LastQuerySuccess = DateTime.UtcNow;
+                _server.FailedQueryAttempts++;
+            }
+            else 
+            {
+                _server.LastQuerySuccess = now;
                 context.ServerSnapshots.Add(new ServerSnapshot
                 {
                     ServerId = _server.ServerId,

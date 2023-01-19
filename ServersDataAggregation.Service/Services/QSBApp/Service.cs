@@ -1,7 +1,5 @@
 ﻿using ServerDataAggregation.Persistence.Models;
-using System.Collections.Generic;
 using System.Text.Json;
-using System.Text.Json.Serialization;
 
 namespace ServersDataAggregation.Service.Services.QSBApp
 {

@@ -56,6 +56,7 @@ public class QuakeWorld : IServerInfoProvider
         {
             sInfo.Players = pStatus.CurrentPlayers.Select(playerInfo => new PlayerSnapshot()
             {
+                FeatureFlags = PlayerSnapshotFeatureFlags.Clothes,
                 SkinName = playerInfo.SkinName.Replace("\"", ""),
                 ShirtColor = int.Parse(playerInfo.ShirtColor),
                 PantColor = int.Parse(playerInfo.PantColor),

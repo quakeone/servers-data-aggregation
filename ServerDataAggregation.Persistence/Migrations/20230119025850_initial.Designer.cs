@@ -12,7 +12,7 @@ using ServerDataAggregation.Persistence;
 namespace ServerDataAggregation.Persistence.Migrations
 {
     [DbContext(typeof(PersistenceContext))]
-    [Migration("20230117043505_initial")]
+    [Migration("20230119025850_initial")]
     partial class initial
     {
         /// <inheritdoc />
@@ -24,6 +24,55 @@ namespace ServerDataAggregation.Persistence.Migrations
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
+
+            modelBuilder.Entity("ServerDataAggregation.Persistence.Models.PlayerMatch", b =>
+                {
+                    b.Property<int>("PlayerMatchId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasColumnName("player_match_id");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("PlayerMatchId"));
+
+                    b.Property<int>("Frags")
+                        .HasColumnType("integer")
+                        .HasColumnName("frags");
+
+                    b.Property<string>("Model")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("model");
+
+                    b.Property<int>("PantColor")
+                        .HasColumnType("integer")
+                        .HasColumnName("pant_color");
+
+                    b.Property<DateTime?>("PlayerMatchEnd")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("player_match_end");
+
+                    b.Property<DateTime?>("PlayerMatchStart")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("player_match_start");
+
+                    b.Property<int>("ShirtColor")
+                        .HasColumnType("integer")
+                        .HasColumnName("shirt_color");
+
+                    b.Property<string>("Skin")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("skin");
+
+                    b.Property<int>("server_match_id")
+                        .HasColumnType("integer");
+
+                    b.HasKey("PlayerMatchId");
+
+                    b.HasIndex("server_match_id");
+
+                    b.ToTable("player_match");
+                });
 
             modelBuilder.Entity("ServerDataAggregation.Persistence.Models.Server", b =>
                 {
@@ -84,10 +133,6 @@ namespace ServerDataAggregation.Persistence.Migrations
                         .HasColumnType("text")
                         .HasColumnName("mod");
 
-                    b.Property<DateTime?>("NextQuery")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("next_query");
-
                     b.Property<string>("Parameters")
                         .HasColumnType("text")
                         .HasColumnName("parameters");
@@ -103,6 +148,48 @@ namespace ServerDataAggregation.Persistence.Migrations
                     b.HasKey("ServerId");
 
                     b.ToTable("server");
+                });
+
+            modelBuilder.Entity("ServerDataAggregation.Persistence.Models.ServerMatch", b =>
+                {
+                    b.Property<int>("ServerMatchId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasColumnName("server_match_id");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("ServerMatchId"));
+
+                    b.Property<string>("Map")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("map");
+
+                    b.Property<DateTime?>("MatchEnd")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("match_end");
+
+                    b.Property<DateTime>("MatchStart")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("match_start");
+
+                    b.Property<string>("Mod")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("mod");
+
+                    b.Property<string>("Mode")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("mode");
+
+                    b.Property<int>("server_id")
+                        .HasColumnType("integer");
+
+                    b.HasKey("ServerMatchId");
+
+                    b.HasIndex("server_id");
+
+                    b.ToTable("server_match");
                 });
 
             modelBuilder.Entity("ServerDataAggregation.Persistence.Models.ServerSnapshot", b =>
@@ -157,6 +244,33 @@ namespace ServerDataAggregation.Persistence.Migrations
                     b.HasKey("ServerSnapshotId");
 
                     b.ToTable("server_snapshot");
+                });
+
+            modelBuilder.Entity("ServerDataAggregation.Persistence.Models.PlayerMatch", b =>
+                {
+                    b.HasOne("ServerDataAggregation.Persistence.Models.ServerMatch", "ServerMatch")
+                        .WithMany("PlayerMatches")
+                        .HasForeignKey("server_match_id")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("ServerMatch");
+                });
+
+            modelBuilder.Entity("ServerDataAggregation.Persistence.Models.ServerMatch", b =>
+                {
+                    b.HasOne("ServerDataAggregation.Persistence.Models.Server", "Server")
+                        .WithMany()
+                        .HasForeignKey("server_id")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Server");
+                });
+
+            modelBuilder.Entity("ServerDataAggregation.Persistence.Models.ServerMatch", b =>
+                {
+                    b.Navigation("PlayerMatches");
                 });
 #pragma warning restore 612, 618
         }

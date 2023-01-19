@@ -28,7 +28,6 @@ namespace ServerDataAggregation.Persistence.Migrations
                     lastquery = table.Column<DateTime>(name: "last_query", type: "timestamp with time zone", nullable: true),
                     lastquerysuccess = table.Column<DateTime>(name: "last_query_success", type: "timestamp with time zone", nullable: true),
                     queryresult = table.Column<int>(name: "query_result", type: "integer", nullable: false),
-                    nextquery = table.Column<DateTime>(name: "next_query", type: "timestamp with time zone", nullable: true),
                     mod = table.Column<string>(type: "text", nullable: true),
                     active = table.Column<bool>(type: "boolean", nullable: false),
                     apikey = table.Column<string>(name: "api_key", type: "text", nullable: false),
@@ -60,16 +59,82 @@ namespace ServerDataAggregation.Persistence.Migrations
                 {
                     table.PrimaryKey("PK_server_snapshot", x => x.serversnapshotid);
                 });
+
+            migrationBuilder.CreateTable(
+                name: "server_match",
+                columns: table => new
+                {
+                    servermatchid = table.Column<int>(name: "server_match_id", type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    serverid = table.Column<int>(name: "server_id", type: "integer", nullable: false),
+                    mod = table.Column<string>(type: "text", nullable: false),
+                    map = table.Column<string>(type: "text", nullable: false),
+                    mode = table.Column<string>(type: "text", nullable: false),
+                    matchstart = table.Column<DateTime>(name: "match_start", type: "timestamp with time zone", nullable: false),
+                    matchend = table.Column<DateTime>(name: "match_end", type: "timestamp with time zone", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_server_match", x => x.servermatchid);
+                    table.ForeignKey(
+                        name: "FK_server_match_server_server_id",
+                        column: x => x.serverid,
+                        principalTable: "server",
+                        principalColumn: "server_id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "player_match",
+                columns: table => new
+                {
+                    playermatchid = table.Column<int>(name: "player_match_id", type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    servermatchid = table.Column<int>(name: "server_match_id", type: "integer", nullable: false),
+                    shirtcolor = table.Column<int>(name: "shirt_color", type: "integer", nullable: false),
+                    pantcolor = table.Column<int>(name: "pant_color", type: "integer", nullable: false),
+                    model = table.Column<string>(type: "text", nullable: false),
+                    skin = table.Column<string>(type: "text", nullable: false),
+                    frags = table.Column<int>(type: "integer", nullable: false),
+                    playermatchstart = table.Column<DateTime>(name: "player_match_start", type: "timestamp with time zone", nullable: true),
+                    playermatchend = table.Column<DateTime>(name: "player_match_end", type: "timestamp with time zone", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_player_match", x => x.playermatchid);
+                    table.ForeignKey(
+                        name: "FK_player_match_server_match_server_match_id",
+                        column: x => x.servermatchid,
+                        principalTable: "server_match",
+                        principalColumn: "server_match_id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateIndex(
+                name: "IX_player_match_server_match_id",
+                table: "player_match",
+                column: "server_match_id");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_server_match_server_id",
+                table: "server_match",
+                column: "server_id");
         }
 
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropTable(
-                name: "server");
+                name: "player_match");
 
             migrationBuilder.DropTable(
                 name: "server_snapshot");
+
+            migrationBuilder.DropTable(
+                name: "server_match");
+
+            migrationBuilder.DropTable(
+                name: "server");
         }
     }
 }

@@ -1,10 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using ServerDataAggregation.Persistence.Models;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace ServerDataAggregation.Persistence
 {
@@ -12,6 +7,8 @@ namespace ServerDataAggregation.Persistence
     {
         public DbSet<Server> Servers { get; set; }
         public DbSet<ServerSnapshot> ServerSnapshots { get; set; }
+        public DbSet<ServerMatch> ServerMatches { get; set; }
+        public DbSet<PlayerMatch> PlayerMatches { get; set; }
 
         // The following configures EF to create a Sqlite database file in the
         // special "local" folder for your platform.

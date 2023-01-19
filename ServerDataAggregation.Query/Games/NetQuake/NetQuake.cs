@@ -64,7 +64,7 @@ public class NetQuake : IServerInfoProvider
 
             players.Add(CreatePlayerSnapshot(playerInfoReply));
         }
-
+        
         serverSnapshot.Port = udp.RemotePort;
         serverSnapshot.IpAddress = udp.RemoteIpAddress;
         serverSnapshot.Players = players.ToArray();
@@ -108,7 +108,8 @@ public class NetQuake : IServerInfoProvider
     {
         var playerSnapshot = new PlayerSnapshot
         {
-            PlayerName = Encoding.UTF8.GetString(pReplyPacket.PlayerName)
+            PlayerName = Encoding.UTF8.GetString(pReplyPacket.PlayerName),
+            FeatureFlags = PlayerSnapshotFeatureFlags.Clothes
         };
 
         // Frags are -99 (observer)

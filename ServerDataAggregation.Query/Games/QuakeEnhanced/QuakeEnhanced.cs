@@ -164,6 +164,7 @@ public class QuakeEnhanced : IServerInfoProvider
     {
         return new PlayerSnapshot
         {
+            FeatureFlags = PlayerSnapshotFeatureFlags.Clothes | PlayerSnapshotFeatureFlags.PlayerType,
             PlayerName = Encoding.UTF8.GetString(pReplyPacket.PlayerName),
             PlayerType = pReplyPacket.Address == "LOCAL" ?
                     PlayerType.Host :

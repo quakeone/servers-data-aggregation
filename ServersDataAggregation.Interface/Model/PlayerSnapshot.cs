@@ -2,11 +2,19 @@
 
 namespace ServersDataAggregation.Common.Model
 {
+    [Flags]
+    public enum PlayerSnapshotFeatureFlags : short
+    {
+        Clothes,
+        PlayerType
+    }
+
     /// <summary>
     /// Contains information reported by server queries
     /// </summary>
     public class PlayerSnapshot
     {
+        public PlayerSnapshotFeatureFlags FeatureFlags { get; set; }
         /// <summary>
         /// Player's Name (utf8)
         /// </summary>
