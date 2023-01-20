@@ -54,7 +54,7 @@ public class QWServerStatus : QWStatusPacketBase
                 switch (colNum)
                 {
                     case 0:
-                        playerStatus.PlayerNumber = Encoding.ASCII.GetString(pBytes, playerOffset, length);
+                        playerStatus.PlayerNumber = Int32.Parse(Encoding.ASCII.GetString(pBytes, playerOffset, length));
                         break;
                     case 1:
                         playerStatus.Frags = Encoding.ASCII.GetString(pBytes, playerOffset, length);

@@ -1,10 +1,15 @@
-﻿using ServerDataAggregation.Persistence.Models;
+﻿using Microsoft.Extensions.Logging;
+using ServerDataAggregation.Persistence.Models;
 using System.Text.Json;
 
 namespace ServersDataAggregation.Service.Services.QSBApp
 {
     internal class Service
     {
+        private ILogger<Services.QSBApp.Service> _logger;
+        public Service(){
+            _logger = LoggerFactory.Create(options => {}).CreateLogger<Services.QSBApp.Service>();
+        }
         private Server Transform(QSBServer server)
         {
             return new Server
@@ -27,7 +32,13 @@ namespace ServersDataAggregation.Service.Services.QSBApp
                 using (var response = await httpClient.GetAsync("https://servers.quakeone.com/api/servers/manage/server"))
                 {
                     string apiResponse = await response.Content.ReadAsStringAsync();
-                    var qsbServers = JsonSerializer.Deserialize<List<QSBServer>>(apiResponse);
+                    List<QSBServer> qsbServers;
+                    try {
+                        qsbServers = JsonSerializer.Deserialize<List<QSBServer>>(apiResponse);
+                    } catch(Exception ex) {
+                        _logger.Log(LogLevel.Error, ex, "Failed to parse feed from QSB Server");
+                        return new Server[0];
+                    }
                     return qsbServers.Select(Transform).ToArray();
                 }
             }

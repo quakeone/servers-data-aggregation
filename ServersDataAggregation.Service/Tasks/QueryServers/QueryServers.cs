@@ -13,13 +13,39 @@ namespace ServersDataAggregation.Service.Tasks.QueryServers;
 
 public class QueryServers
 {
-    private async Task<Server[]> FindQueryableServers()
+    private async Task EnsureAllServerStateExists(PersistenceContext context) 
+    {
+        var query = from server in context.Set<Server>()
+            join serverState in context.Set<ServerState>()
+                on server.ServerId equals serverState.ServerDefinition.ServerId into grouping
+            from serverState in grouping.DefaultIfEmpty()
+            where serverState == null
+            select server ;
+
+        var noState = await query.ToArrayAsync();
+        if (noState.Length > 0) {
+            await context.ServerState.AddRangeAsync(noState.Select(server => new ServerState{
+                ServerDefinition = server
+            }));
+            try {
+                await context.SaveChangesAsync();
+            }
+            catch(Exception ex) {
+
+            }
+        }
+    }
+    private async Task<ServerState[]> FindQueryableServers()
     {
         using(var context = new PersistenceContext())
         {
-            var candidates = await context.Servers.Where(server =>
-                server.Active &&
-                (server.LastQuery == null || server.LastQuery < DateTime.UtcNow.AddSeconds(-server.QueryInterval))
+            await EnsureAllServerStateExists(context);
+            
+            var candidates = await context.ServerState
+                .Include(s => s.ServerDefinition)
+                .Where(serverState =>
+                serverState.ServerDefinition.Active &&
+                (serverState.LastQuery == null || serverState.LastQuery < DateTime.UtcNow.AddSeconds(-serverState.ServerDefinition.QueryInterval))
             ).ToArrayAsync();
 
             return candidates.Where(candidate =>
@@ -57,9 +83,9 @@ public class QueryServers
     /// </summary>
     /// <param name="pServer"></param>
     /// <returns></returns>
-    public Task DoQuery(Server server)
+    public Task DoQuery(ServerState serverState)
     { 
-        return Task.Run(() => new QueryServer(server).DoQuery());
+        return Task.Run(() => new QueryServer(serverState).DoQuery());
     }
 
     /// <summary>
@@ -70,7 +96,7 @@ public class QueryServers
     {
         var serversToQuery = await FindQueryableServers();
 
-        await Task.WhenAll(serversToQuery.AsParallel().Select(server => Task.Run(() => new QueryServer(server).DoQuery())));
+        await Task.WhenAll(serversToQuery.AsParallel().Select(serverState => Task.Run(() => new QueryServer(serverState).DoQuery())));
     }
 
     ///// <summary>

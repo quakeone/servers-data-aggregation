@@ -19,17 +19,18 @@ internal class QueryServer
     /// </summary>
     const int SERVER_NOT_RESPONDING_RETRY_COUNT = 3;
 
-    public Server _server { get; private set; }
+    public ServerState _serverState { get; private set; }
 
-    internal QueryServer(Server server)
+    internal QueryServer(ServerState serverState)
     {
-        _server = server;
+        _serverState = serverState;
     }
 
     private Tuple<Common.Model.ServerSnapshot?, ServerStatus> GetSnapshot()
     {
         int pRetryCount = 0;
         ServerStatus status = ServerStatus.Running;
+        Server server = _serverState.ServerDefinition;
         do
         {
             string retryString = "";
@@ -38,11 +39,11 @@ internal class QueryServer
                 Thread.Sleep(1000);
                 retryString = " (Retry #" + pRetryCount + ")";
             }
-            System.Diagnostics.Debug.WriteLine("Querying " + _server.Address + ":" + _server.Port.ToString() + retryString);
+            System.Diagnostics.Debug.WriteLine("Querying " + server.Address + ":" + server.Port.ToString() + retryString);
             try
             {
                 return new Tuple<Common.Model.ServerSnapshot?, ServerStatus>(
-                    ServerInterface.GetServerInfo(_server.Address.Trim(), _server.Port, (Game)_server.GameId, _server.Parameters),
+                    ServerInterface.GetServerInfo(server.Address.Trim(), server.Port, (Game)server.GameId, server.Parameters),
                     status);
             }
             catch (ServerNotRespondingException)
@@ -71,22 +72,22 @@ internal class QueryServer
         var snapshotResult = GetSnapshot();
         using (var context = new PersistenceContext())
         {
-            context.Servers.Attach(_server);
-            _server.LastQuery = now;
-            _server.LastQueryResult = (int)snapshotResult.Item2;
+            context.ServerState.Attach(_serverState);
+            _serverState.LastQuery = now;
+            _serverState.LastQueryResult = (int)snapshotResult.Item2;
 
             var snapshot = snapshotResult.Item1;
 
             if (snapshot == null)
             {
-                _server.FailedQueryAttempts++;
+                _serverState.FailedQueryAttempts++;
             }
             else 
             {
-                _server.LastQuerySuccess = now;
+                _serverState.TimeStamp = now;
                 context.ServerSnapshots.Add(new ServerSnapshot
                 {
-                    ServerId = _server.ServerId,
+                    ServerId = _serverState.ServerDefinition.ServerId,
                     Hostname = snapshot.ServerName,
                     Map = snapshot.Map,
                     IpAddress = snapshot.IpAddress,
@@ -102,7 +103,7 @@ internal class QueryServer
                         PantColor = player.PantColor,
                         Skin = player.SkinName,
                         Model = player.ModelName,
-                        Name = player.PlayerName,
+                        Name = player.Name,
                         Ping = player.Ping,
                         PlayTime = player.PlayTime
                     }).ToList()

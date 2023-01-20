@@ -60,7 +60,8 @@ public class QuakeWorld : IServerInfoProvider
                 SkinName = playerInfo.SkinName.Replace("\"", ""),
                 ShirtColor = int.Parse(playerInfo.ShirtColor),
                 PantColor = int.Parse(playerInfo.PantColor),
-                PlayerName = Encoding.UTF8.GetString(playerInfo.PlayerBytes),
+                Number = (int)playerInfo.PlayerNumber,
+                Name = Encoding.UTF8.GetString(playerInfo.PlayerBytes),
                 PlayTime = TimeSpan.FromMinutes(int.Parse(playerInfo.PlayMins)),
                 Ping = int.Parse(playerInfo.Ping),
                 Frags = int.Parse(playerInfo.Frags)

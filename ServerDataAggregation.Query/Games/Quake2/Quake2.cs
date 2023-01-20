@@ -62,7 +62,7 @@ class Quake2 : IServerInfoProvider
         {
             sInfo.Players = pStatus.CurrentPlayers.Select(playerInfo => new PlayerSnapshot()
                 {
-                    PlayerName = playerInfo.PlayerName,
+                    Name = playerInfo.PlayerName,
                     Ping = int.Parse(playerInfo.Ping),
                     Frags = int.Parse(playerInfo.Frags)
                 })

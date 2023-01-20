@@ -57,7 +57,7 @@ internal class Quake3 : IServerInfoProvider
 
             sInfo.Players = pStatus.CurrentPlayers.Select(playerInfo => new PlayerSnapshot()
             {
-                PlayerName = playerInfo.PlayerName.Replace("\"", ""),
+                Name = playerInfo.PlayerName.Replace("\"", ""),
                 Ping = int.Parse(playerInfo.Ping),
                 Frags = int.Parse(playerInfo.Frags)
             })

@@ -108,7 +108,7 @@ public class NetQuake : IServerInfoProvider
     {
         var playerSnapshot = new PlayerSnapshot
         {
-            PlayerName = Encoding.UTF8.GetString(pReplyPacket.PlayerName),
+            Name = Encoding.UTF8.GetString(pReplyPacket.PlayerName),
             FeatureFlags = PlayerSnapshotFeatureFlags.Clothes
         };
 
@@ -117,7 +117,7 @@ public class NetQuake : IServerInfoProvider
             playerSnapshot.Frags = -99;
         else
             playerSnapshot.Frags = pReplyPacket.FragCount;
-
+        playerSnapshot.Number = (int)pReplyPacket.PlayerNumber;
         playerSnapshot.PantColor = (int)pReplyPacket.PantColor;
         playerSnapshot.ShirtColor = (int)pReplyPacket.ShirtColor;
         playerSnapshot.PlayTime = TimeSpan.FromSeconds(pReplyPacket.PlayTime);

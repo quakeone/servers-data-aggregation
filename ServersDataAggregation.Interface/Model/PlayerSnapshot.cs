@@ -18,7 +18,11 @@ namespace ServersDataAggregation.Common.Model
         /// <summary>
         /// Player's Name (utf8)
         /// </summary>
-        public string PlayerName { get; set; }
+        public string Name { get; set; }
+        /// <summary>
+        /// Player's Name (utf8)
+        /// </summary>
+        public int Number { get; set; }
         /// <summary>
         /// Shirt Color is using
         /// </summary>

@@ -12,3 +12,4 @@ services:
       POSTGRES_DB: "servers"
 # volumes: 
 #   db_volume:
+# docker run --rm -p 5555:5432 -e POSTGRES_USER=docker -e POSTGRES_PASSWORD=docker -e POSTGRES_DB=servers postgres:12-alpine

@@ -3,17 +3,17 @@
     public class Player
     {
         /// <summary>
-        /// Text friendly name of Player
+        /// Name of Player
         /// </summary>
         public string Name { get; private set; }
         /// <summary>
-        /// Raw byte representation of Player's name
+        /// Server reported player number (to distinguish by players of same name)
         /// </summary>
-        public byte[] NameBytes { get; private set; }
+        public string Number { get; private set; }
         /// <summary>
         /// How long Player has been on the server
         /// </summary>
-        public TimeSpan UpTime { get; private set; }
+        public DateTime JoinTime { get; private set; }
         /// <summary>
         /// Current frag count of Player
         /// </summary>
@@ -22,10 +22,6 @@
         /// Total frags earned by Player while Connected
         /// </summary>
         public int TotalFrags { get; private set; }
-        /// <summary>
-        /// Player's Unique Identifier
-        /// </summary>
-        public int PlayerId { get; private set; }
         /// <summary>
         /// If supported, Player's shirt color
         /// </summary>
