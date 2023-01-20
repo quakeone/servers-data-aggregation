@@ -7,6 +7,7 @@ namespace ServerDataAggregation.Persistence
     {
         public DbSet<Server> Servers { get; set; }
         public DbSet<ServerSnapshot> ServerSnapshots { get; set; }
+        public DbSet<ServerState> ServerState { get; set; }
         public DbSet<ServerMatch> ServerMatches { get; set; }
         public DbSet<PlayerMatch> PlayerMatches { get; set; }
 

@@ -35,17 +35,6 @@ namespace ServerDataAggregation.Persistence.Models
         /// Seconds between each query interval (Minimum of 10 seconds)
         /// </summary>
         public virtual int QueryInterval { get; set; }
-        [Column("failed_query_attempts")]
-        public virtual int FailedQueryAttempts { get; set; }
-        [Column("last_query")]
-        public virtual DateTime? LastQuery { get; set; }
-        [Column("last_query_success")]
-        /// <summary>
-        /// Last time a server was online or successfully queried
-        /// </summary>
-        public virtual DateTime? LastQuerySuccess { get; set; }
-        [Column("query_result")]
-        public virtual int LastQueryResult { get; set; }
         [Column("mod")]
         public virtual string? Mod { get; set; }
 

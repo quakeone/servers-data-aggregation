@@ -98,25 +98,9 @@ namespace ServerDataAggregation.Persistence.Migrations
                         .HasColumnType("text")
                         .HasColumnName("country");
 
-                    b.Property<int>("FailedQueryAttempts")
-                        .HasColumnType("integer")
-                        .HasColumnName("failed_query_attempts");
-
                     b.Property<int>("GameId")
                         .HasColumnType("integer")
                         .HasColumnName("game_id");
-
-                    b.Property<DateTime?>("LastQuery")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("last_query");
-
-                    b.Property<int>("LastQueryResult")
-                        .HasColumnType("integer")
-                        .HasColumnName("query_result");
-
-                    b.Property<DateTime?>("LastQuerySuccess")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("last_query_success");
 
                     b.Property<string>("Locality")
                         .HasColumnType("text")
@@ -243,6 +227,65 @@ namespace ServerDataAggregation.Persistence.Migrations
                     b.ToTable("server_snapshot");
                 });
 
+            modelBuilder.Entity("ServerDataAggregation.Persistence.Models.ServerState", b =>
+                {
+                    b.Property<int>("ServerStateId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasColumnName("server_state_id");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("ServerStateId"));
+
+                    b.Property<int>("FailedQueryAttempts")
+                        .HasColumnType("integer")
+                        .HasColumnName("failed_query_attempts");
+
+                    b.Property<string>("Hostname")
+                        .HasColumnType("text")
+                        .HasColumnName("hostname");
+
+                    b.Property<string>("IpAddress")
+                        .HasColumnType("text")
+                        .HasColumnName("ip_address");
+
+                    b.Property<DateTime?>("LastQuery")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("last_query");
+
+                    b.Property<int>("LastQueryResult")
+                        .HasColumnType("integer")
+                        .HasColumnName("query_result");
+
+                    b.Property<string>("Map")
+                        .HasColumnType("text")
+                        .HasColumnName("map");
+
+                    b.Property<int>("MaxPlayers")
+                        .HasColumnType("integer")
+                        .HasColumnName("max_players");
+
+                    b.Property<string>("Mode")
+                        .HasColumnType("text")
+                        .HasColumnName("mode");
+
+                    b.Property<string>("ServerSettings")
+                        .HasColumnType("text")
+                        .HasColumnName("server_settings");
+
+                    b.Property<DateTime?>("TimeStamp")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("timestamp");
+
+                    b.Property<int>("server_id")
+                        .HasColumnType("integer");
+
+                    b.HasKey("ServerStateId");
+
+                    b.HasIndex("server_id");
+
+                    b.ToTable("server_state");
+                });
+
             modelBuilder.Entity("ServerDataAggregation.Persistence.Models.PlayerMatch", b =>
                 {
                     b.HasOne("ServerDataAggregation.Persistence.Models.ServerMatch", "ServerMatch")
@@ -263,6 +306,17 @@ namespace ServerDataAggregation.Persistence.Migrations
                         .IsRequired();
 
                     b.Navigation("Server");
+                });
+
+            modelBuilder.Entity("ServerDataAggregation.Persistence.Models.ServerState", b =>
+                {
+                    b.HasOne("ServerDataAggregation.Persistence.Models.Server", "ServerDefinition")
+                        .WithMany()
+                        .HasForeignKey("server_id")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("ServerDefinition");
                 });
 
             modelBuilder.Entity("ServerDataAggregation.Persistence.Models.ServerMatch", b =>

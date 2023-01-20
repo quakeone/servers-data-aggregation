@@ -24,10 +24,6 @@ namespace ServerDataAggregation.Persistence.Migrations
                     country = table.Column<string>(type: "text", nullable: true),
                     locality = table.Column<string>(type: "text", nullable: true),
                     queryinterval = table.Column<int>(name: "query_interval", type: "integer", nullable: false),
-                    failedqueryattempts = table.Column<int>(name: "failed_query_attempts", type: "integer", nullable: false),
-                    lastquery = table.Column<DateTime>(name: "last_query", type: "timestamp with time zone", nullable: true),
-                    lastquerysuccess = table.Column<DateTime>(name: "last_query_success", type: "timestamp with time zone", nullable: true),
-                    queryresult = table.Column<int>(name: "query_result", type: "integer", nullable: false),
                     mod = table.Column<string>(type: "text", nullable: true),
                     active = table.Column<bool>(type: "boolean", nullable: false),
                     apikey = table.Column<string>(name: "api_key", type: "text", nullable: false),
@@ -85,6 +81,35 @@ namespace ServerDataAggregation.Persistence.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "server_state",
+                columns: table => new
+                {
+                    serverstateid = table.Column<int>(name: "server_state_id", type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    serverid = table.Column<int>(name: "server_id", type: "integer", nullable: false),
+                    timestamp = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    hostname = table.Column<string>(type: "text", nullable: true),
+                    map = table.Column<string>(type: "text", nullable: true),
+                    mode = table.Column<string>(type: "text", nullable: true),
+                    ipaddress = table.Column<string>(name: "ip_address", type: "text", nullable: true),
+                    maxplayers = table.Column<int>(name: "max_players", type: "integer", nullable: false),
+                    serversettings = table.Column<string>(name: "server_settings", type: "text", nullable: true),
+                    failedqueryattempts = table.Column<int>(name: "failed_query_attempts", type: "integer", nullable: false),
+                    lastquery = table.Column<DateTime>(name: "last_query", type: "timestamp with time zone", nullable: true),
+                    queryresult = table.Column<int>(name: "query_result", type: "integer", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_server_state", x => x.serverstateid);
+                    table.ForeignKey(
+                        name: "FK_server_state_server_server_id",
+                        column: x => x.serverid,
+                        principalTable: "server",
+                        principalColumn: "server_id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "player_match",
                 columns: table => new
                 {
@@ -119,6 +144,11 @@ namespace ServerDataAggregation.Persistence.Migrations
                 name: "IX_server_match_server_id",
                 table: "server_match",
                 column: "server_id");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_server_state_server_id",
+                table: "server_state",
+                column: "server_id");
         }
 
         /// <inheritdoc />
@@ -129,6 +159,9 @@ namespace ServerDataAggregation.Persistence.Migrations
 
             migrationBuilder.DropTable(
                 name: "server_snapshot");
+
+            migrationBuilder.DropTable(
+                name: "server_state");
 
             migrationBuilder.DropTable(
                 name: "server_match");
