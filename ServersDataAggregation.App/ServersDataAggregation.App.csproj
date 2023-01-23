@@ -16,4 +16,11 @@
     <ProjectReference Include="..\ServersDataAggregation.Service\ServersDataAggregation.Service.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <None Update="appsettings.Production.json">
+      <Generator>SettingsSingleFileGenerator</Generator>
+      <LastGenOutput>appsettings.Production.Designer.cs</LastGenOutput>
+    </None>
+  </ItemGroup>
+
 </Project>

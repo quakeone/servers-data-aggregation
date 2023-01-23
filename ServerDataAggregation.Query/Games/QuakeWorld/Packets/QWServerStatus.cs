@@ -1,5 +1,6 @@
 ﻿using System.Text;
 using System.Collections;
+using ServersDataAggregation.Common.Model;
 
 namespace ServersDataAggregation.Query.Games.QuakeWorld.Packets;
 
@@ -18,7 +19,7 @@ public class QWServerStatus : QWStatusPacketBase
         CurrentPlayers = new List<QWPlayerStatus>();
     }
 
-    internal void ParseBytes(byte[] pBytes)
+    internal void ParseBytes(byte[] pBytes, ServerParameters parameters)
     {
         int byteCounter = 0;
         if (pBytes[byteCounter++] != 0xff) throw new Exception("bad bytes");
@@ -60,7 +61,15 @@ public class QWServerStatus : QWStatusPacketBase
                         playerStatus.Frags = Encoding.ASCII.GetString(pBytes, playerOffset, length);
                         break;
                     case 2:
-                        playerStatus.PlayMins = Encoding.ASCII.GetString(pBytes, playerOffset, length);
+                        if (!string.IsNullOrEmpty(parameters.Engine) && parameters.Engine.ToLower() == "fte")
+                        {
+                            // this is broken in FTE.
+                            playerStatus.PlayMins = null;
+                        }
+                        else
+                        {
+                            playerStatus.PlayMins = Encoding.ASCII.GetString(pBytes, playerOffset, length);
+                        }
                         break;
                     case 3:
                         playerStatus.Ping = Encoding.ASCII.GetString(pBytes, playerOffset, length);

@@ -16,14 +16,18 @@ namespace ServerDataAggregation.Persistence.Models
         public int PlayerMatchId { get; set; }
         [ForeignKey("server_match_id")]
         public virtual ServerMatch ServerMatch { get; set; }
+        [Column("name")]
+        public virtual string Name { get; set; }
+        [Column("number")]
+        public virtual int Number { get; set; }
         [Column("shirt_color")]
         public virtual int ShirtColor { get; set; }
         [Column("pant_color")]
         public virtual int PantColor { get; set; }
         [Column("model")]
-        public virtual string Model { get; set; }
+        public virtual string? Model { get; set; }
         [Column("skin")]
-        public virtual string Skin { get; set; }
+        public virtual string? Skin { get; set; }
         [Column("frags")]
         public virtual int Frags { get; set; }
         [Column("player_match_start")]

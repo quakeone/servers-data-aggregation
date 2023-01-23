@@ -1,4 +1,6 @@
-﻿using System;
+﻿using Microsoft.EntityFrameworkCore.Metadata.Builders;
+using Microsoft.EntityFrameworkCore;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
@@ -25,6 +27,8 @@ namespace ServerDataAggregation.Persistence.Models
         public virtual string? Hostname { get; set; }
         [Column("map")]
         public virtual string? Map { get; set; }
+        [Column("mod")]
+        public virtual string? Mod { get; set; }
         [Column("mode")]
         public virtual string? Mode { get; set; }
         [Column("ip_address")]
@@ -44,6 +48,7 @@ namespace ServerDataAggregation.Persistence.Models
         public virtual DateTime? LastQuery { get; set; }
         [Column("query_result")]
         public virtual int LastQueryResult { get; set; }
+
     }
 
     [NotMapped]
@@ -56,7 +61,7 @@ namespace ServerDataAggregation.Persistence.Models
         /// <summary>
         /// Player's Number
         /// </summary>
-        public string Number { get; set; }
+        public int Number { get; set; }
         /// <summary>
         /// Color of shirt
         /// </summary>
@@ -68,7 +73,7 @@ namespace ServerDataAggregation.Persistence.Models
         /// <summary>
         /// Skin player is using
         /// </summary>
-        public string Skin { get; set; }
+        public string? Skin { get; set; }
         /// <summary>
         /// Model Player is using
         /// </summary>
@@ -86,8 +91,18 @@ namespace ServerDataAggregation.Persistence.Models
         /// </summary>
         public int TotalFrags { get; set; }
         /// <summary>
-        /// Current server reported playing time of player
+        /// Join Timestamp of Player
         /// </summary>
-        public TimeSpan PlayTime { get; set; }
+        public DateTime JoinTime { get; set; }
+    }
+
+    public class ServerStateConfiguration : IEntityTypeConfiguration<ServerState>
+    {
+        public void Configure(EntityTypeBuilder<ServerState> builder)
+        {
+            // This Converter will perform the conversion to and from Json to the desired type
+            builder.Property(e => e.Players).HasJsonConversion();
+        }
     }
 }
+

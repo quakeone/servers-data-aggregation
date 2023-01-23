@@ -21,5 +21,11 @@ namespace ServerDataAggregation.Persistence
                 x => x.MigrationsAssembly("ServerDataAggregation.Persistence")
             );
         }
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
+        {
+            //TODO: Possibly add something like BaseEntityConfiguration?
+            modelBuilder.ApplyConfiguration(new ServerSnapshotConfiguration());
+            modelBuilder.ApplyConfiguration(new ServerStateConfiguration());
+        }
     }
 }

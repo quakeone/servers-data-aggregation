@@ -44,6 +44,10 @@ namespace ServerDataAggregation.Persistence.Models
         /// </summary>
         public string Name { get; set; }
         /// <summary>
+        /// Player's Name
+        /// </summary>
+        public int Number { get; set; }
+        /// <summary>
         /// Color of shirt
         /// </summary>
         public int ShirtColor { get; set; }

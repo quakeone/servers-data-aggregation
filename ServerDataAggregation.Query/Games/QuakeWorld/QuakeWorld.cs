@@ -13,7 +13,13 @@ public class QuakeWorld : IServerInfoProvider
     private const string QW_SETTING_VERSION = "*version";
     private const string QW_SETTING_MAXPLAYERS = "maxclients";
     private const string QW_SETTING_MOD = "*gamedir";
-    
+    private ServerParameters _serverParams;
+
+    public QuakeWorld(ServerParameters parameters)
+    {
+        _serverParams = parameters;
+    }
+
     #region IServerInfoProvider Members
 
     public ServerSnapshot GetServerInfo(string pServerAddress, int pServerPort)
@@ -26,7 +32,7 @@ public class QuakeWorld : IServerInfoProvider
         if (receivedBytes == null || receivedBytes.Length == 0)
             throw new SocketException((int)SocketError.NoData);
 
-        qwServer.ParseBytes(receivedBytes);
+        qwServer.ParseBytes(receivedBytes, _serverParams);
 
         ServerSnapshot info = GetServerInfo(qwServer);
         info.Port = udp.RemotePort;
@@ -62,7 +68,7 @@ public class QuakeWorld : IServerInfoProvider
                 PantColor = int.Parse(playerInfo.PantColor),
                 Number = (int)playerInfo.PlayerNumber,
                 Name = Encoding.UTF8.GetString(playerInfo.PlayerBytes),
-                PlayTime = TimeSpan.FromMinutes(int.Parse(playerInfo.PlayMins)),
+                PlayTime = playerInfo.PlayMins == null ? new TimeSpan(0) : TimeSpan.FromMinutes(int.Parse(playerInfo.PlayMins)),
                 Ping = int.Parse(playerInfo.Ping),
                 Frags = int.Parse(playerInfo.Frags)
             })

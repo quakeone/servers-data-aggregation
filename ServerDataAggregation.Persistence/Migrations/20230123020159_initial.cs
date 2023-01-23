@@ -49,7 +49,8 @@ namespace ServerDataAggregation.Persistence.Migrations
                     mode = table.Column<string>(type: "text", nullable: true),
                     ipaddress = table.Column<string>(name: "ip_address", type: "text", nullable: false),
                     maxplayers = table.Column<int>(name: "max_players", type: "integer", nullable: false),
-                    serversettings = table.Column<string>(name: "server_settings", type: "text", nullable: false)
+                    serversettings = table.Column<string>(name: "server_settings", type: "text", nullable: false),
+                    players = table.Column<string>(type: "jsonb", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -63,9 +64,9 @@ namespace ServerDataAggregation.Persistence.Migrations
                     servermatchid = table.Column<int>(name: "server_match_id", type: "integer", nullable: false)
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
                     serverid = table.Column<int>(name: "server_id", type: "integer", nullable: false),
-                    mod = table.Column<string>(type: "text", nullable: false),
                     map = table.Column<string>(type: "text", nullable: false),
-                    mode = table.Column<string>(type: "text", nullable: false),
+                    mod = table.Column<string>(type: "text", nullable: true),
+                    mode = table.Column<string>(type: "text", nullable: true),
                     matchstart = table.Column<DateTime>(name: "match_start", type: "timestamp with time zone", nullable: false),
                     matchend = table.Column<DateTime>(name: "match_end", type: "timestamp with time zone", nullable: true)
                 },
@@ -90,10 +91,12 @@ namespace ServerDataAggregation.Persistence.Migrations
                     timestamp = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
                     hostname = table.Column<string>(type: "text", nullable: true),
                     map = table.Column<string>(type: "text", nullable: true),
+                    mod = table.Column<string>(type: "text", nullable: true),
                     mode = table.Column<string>(type: "text", nullable: true),
                     ipaddress = table.Column<string>(name: "ip_address", type: "text", nullable: true),
                     maxplayers = table.Column<int>(name: "max_players", type: "integer", nullable: false),
                     serversettings = table.Column<string>(name: "server_settings", type: "text", nullable: true),
+                    players = table.Column<string>(type: "jsonb", nullable: true),
                     failedqueryattempts = table.Column<int>(name: "failed_query_attempts", type: "integer", nullable: false),
                     lastquery = table.Column<DateTime>(name: "last_query", type: "timestamp with time zone", nullable: true),
                     queryresult = table.Column<int>(name: "query_result", type: "integer", nullable: false)
@@ -116,10 +119,12 @@ namespace ServerDataAggregation.Persistence.Migrations
                     playermatchid = table.Column<int>(name: "player_match_id", type: "integer", nullable: false)
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
                     servermatchid = table.Column<int>(name: "server_match_id", type: "integer", nullable: false),
+                    name = table.Column<string>(type: "text", nullable: false),
+                    number = table.Column<int>(type: "integer", nullable: false),
                     shirtcolor = table.Column<int>(name: "shirt_color", type: "integer", nullable: false),
                     pantcolor = table.Column<int>(name: "pant_color", type: "integer", nullable: false),
-                    model = table.Column<string>(type: "text", nullable: false),
-                    skin = table.Column<string>(type: "text", nullable: false),
+                    model = table.Column<string>(type: "text", nullable: true),
+                    skin = table.Column<string>(type: "text", nullable: true),
                     frags = table.Column<int>(type: "integer", nullable: false),
                     playermatchstart = table.Column<DateTime>(name: "player_match_start", type: "timestamp with time zone", nullable: true),
                     playermatchend = table.Column<DateTime>(name: "player_match_end", type: "timestamp with time zone", nullable: true)

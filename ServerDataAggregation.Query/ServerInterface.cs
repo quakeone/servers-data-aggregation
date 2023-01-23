@@ -40,7 +40,7 @@ public class ServerInterface
                 infoProvider = new Games.NetQuake.NetQuake();
                 break;
             case Game.QuakeWorld:
-                infoProvider = new Games.QuakeWorld.QuakeWorld();
+                infoProvider = new Games.QuakeWorld.QuakeWorld(parameters);
                 break;
             case Game.Quake2:
                 infoProvider = new Games.Quake2.Quake2();
@@ -51,7 +51,7 @@ public class ServerInterface
             case Game.QuakeEnhanced:
                 if (parameters.Engine == "fte")
                 {
-                    infoProvider = new Games.QuakeWorld.QuakeWorld();
+                    infoProvider = new Games.QuakeWorld.QuakeWorld(parameters);
                 }
                 else
                 {

@@ -17,12 +17,12 @@ namespace ServerDataAggregation.Persistence.Models
         [ForeignKey("server_id")]
         public virtual Server Server { get; set; }
         public virtual ICollection<PlayerMatch> PlayerMatches { get; set; }
-        [Column("mod")]
-        public string Mod { get; set; }
         [Column("map")]
         public string Map { get; set; }
+        [Column("mod")]
+        public string? Mod { get; set; }
         [Column("mode")]
-        public string Mode { get; set; }
+        public string? Mode { get; set; }
         [Column("match_start")]
         public DateTime MatchStart { get; set; }
         [Column("match_end")]

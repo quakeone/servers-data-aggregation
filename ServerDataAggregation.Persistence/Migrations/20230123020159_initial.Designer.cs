@@ -12,7 +12,7 @@ using ServerDataAggregation.Persistence;
 namespace ServerDataAggregation.Persistence.Migrations
 {
     [DbContext(typeof(PersistenceContext))]
-    [Migration("20230119185457_initial")]
+    [Migration("20230123020159_initial")]
     partial class initial
     {
         /// <inheritdoc />
@@ -39,9 +39,17 @@ namespace ServerDataAggregation.Persistence.Migrations
                         .HasColumnName("frags");
 
                     b.Property<string>("Model")
-                        .IsRequired()
                         .HasColumnType("text")
                         .HasColumnName("model");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("name");
+
+                    b.Property<int>("Number")
+                        .HasColumnType("integer")
+                        .HasColumnName("number");
 
                     b.Property<int>("PantColor")
                         .HasColumnType("integer")
@@ -60,7 +68,6 @@ namespace ServerDataAggregation.Persistence.Migrations
                         .HasColumnName("shirt_color");
 
                     b.Property<string>("Skin")
-                        .IsRequired()
                         .HasColumnType("text")
                         .HasColumnName("skin");
 
@@ -157,12 +164,10 @@ namespace ServerDataAggregation.Persistence.Migrations
                         .HasColumnName("match_start");
 
                     b.Property<string>("Mod")
-                        .IsRequired()
                         .HasColumnType("text")
                         .HasColumnName("mod");
 
                     b.Property<string>("Mode")
-                        .IsRequired()
                         .HasColumnType("text")
                         .HasColumnName("mode");
 
@@ -211,6 +216,11 @@ namespace ServerDataAggregation.Persistence.Migrations
                     b.Property<string>("Mode")
                         .HasColumnType("text")
                         .HasColumnName("mode");
+
+                    b.Property<string>("Players")
+                        .IsRequired()
+                        .HasColumnType("jsonb")
+                        .HasColumnName("players");
 
                     b.Property<int>("ServerId")
                         .HasColumnType("integer")
@@ -267,9 +277,17 @@ namespace ServerDataAggregation.Persistence.Migrations
                         .HasColumnType("integer")
                         .HasColumnName("max_players");
 
+                    b.Property<string>("Mod")
+                        .HasColumnType("text")
+                        .HasColumnName("mod");
+
                     b.Property<string>("Mode")
                         .HasColumnType("text")
                         .HasColumnName("mode");
+
+                    b.Property<string>("Players")
+                        .HasColumnType("jsonb")
+                        .HasColumnName("players");
 
                     b.Property<string>("ServerSettings")
                         .HasColumnType("text")

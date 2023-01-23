@@ -1,0 +1,141 @@
+﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
+using ServerDataAggregation.Persistence;
+using ServerDataAggregation.Persistence.Models;
+using ServersDataAggregation.Common.Model;
+using System;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.Linq;
+using System.Net;
+using System.Numerics;
+using System.Text;
+using System.Text.Json;
+using System.Threading.Tasks;
+using Db = ServerDataAggregation.Persistence.Models;
+
+namespace ServersDataAggregation.Service.Tasks.QueryServers
+{
+    internal class StateUpdate
+    {
+        private ServerState _serverState;
+        private Common.Model.ServerSnapshot _snapshot;
+        private ILogger<StateUpdate> _logger;
+
+        public StateUpdate(ServerState serverState, Common.Model.ServerSnapshot snapshot)
+        {
+            _logger = LoggerFactory.Create(options => { }).CreateLogger<StateUpdate>();
+            _serverState = serverState;
+            _snapshot = snapshot;
+        }
+
+        private Db.ServerSnapshot CreateServerSnapshot(Common.Model.ServerSnapshot serverSnapshot)
+        {
+            return new Db.ServerSnapshot
+            {
+                ServerId = _serverState.ServerDefinition.ServerId,
+                Hostname = _snapshot.ServerName,
+                Map = _snapshot.Map,
+                IpAddress = _snapshot.IpAddress,
+                ServerSettings = JsonSerializer.Serialize(_snapshot.ServerSettings),
+                TimeStamp = DateTime.UtcNow,
+                MaxPlayers = _snapshot.MaxPlayerCount,
+                Mod = _snapshot.Mod,
+                Mode = _snapshot.Mode,
+                Players = _snapshot.Players.Select(player => new ServerDataAggregation.Persistence.Models.PlayerSnapshot
+                {
+                    Frags = player.Frags,
+                    ShirtColor = player.ShirtColor,
+                    PantColor = player.PantColor,
+                    Skin = player.SkinName,
+                    Model = player.ModelName,
+                    Name = player.Name,
+                    Number = player.Number,
+                    Ping = player.Ping,
+                    PlayTime = player.PlayTime
+                }).ToList()
+            };
+        }
+        private int CalcTotalFrags(
+            Common.Model.PlayerSnapshot currentPlayerSnapshot,
+            Db.PlayerSnapshot? prevPlayerSnapshot,
+            PlayerState? currentPlayerState) {
+            // Assume observer
+            if (currentPlayerSnapshot.Frags == -99)
+            {
+                return currentPlayerState?.TotalFrags ?? 0;
+            }
+            if (prevPlayerSnapshot == null || currentPlayerState == null)
+            {
+                return currentPlayerSnapshot.Frags;
+            }
+            if (currentPlayerSnapshot.Frags > prevPlayerSnapshot.Frags)
+            {
+                return currentPlayerState.TotalFrags + (currentPlayerSnapshot.Frags - prevPlayerSnapshot.Frags);
+            }
+            return currentPlayerState.TotalFrags;
+        }
+
+        public async Task UpdateServerState(PersistenceContext context)
+        {
+            var timeAllowance = DateTime.UtcNow.Subtract(new TimeSpan(0, 5, 0));
+            var prevSnapshot = context.ServerSnapshots
+                                .Where(s =>
+                                    s.ServerId == _serverState.ServerDefinition.ServerId
+                                    && s.TimeStamp > timeAllowance
+                                )
+                                .OrderByDescending(t => t.TimeStamp)
+                                .FirstOrDefault();
+
+            var snapshot = CreateServerSnapshot(_snapshot);
+            context.ServerSnapshots.Add(snapshot);
+
+            if (prevSnapshot == null)
+            {
+                prevSnapshot = snapshot;
+            }
+
+            _serverState.TimeStamp = DateTime.UtcNow;
+            _serverState.Map = _snapshot.Map;
+            _serverState.Mod = _snapshot.Mod;
+            _serverState.Mode = _snapshot.Mode;
+            _serverState.Players = _snapshot.Players.Select(player =>
+            {
+                var prevPlayerState = _serverState.Players?.FirstOrDefault(p => p.Number == player.Number && p.Name == player.Name);
+                var prevPlayerSnap = prevSnapshot.Players.FirstOrDefault(p => p.Number == player.Number && p.Name == player.Name);
+
+                var joinTime = prevPlayerState == null || prevPlayerState.JoinTime == null
+                        ? (DateTime.UtcNow - player.PlayTime)
+                        : prevPlayerState.JoinTime;
+
+                return new PlayerState
+                {
+                    Frags = player.Frags,
+                    ShirtColor = player.ShirtColor,
+                    PantColor = player.PantColor,
+                    TotalFrags = CalcTotalFrags(player, prevPlayerSnap, prevPlayerState),
+                    Skin = player.SkinName,
+                    Model = player.ModelName,
+                    Name = player.Name,
+                    Number = player.Number,
+                    Ping = player.Ping,
+                    JoinTime = joinTime
+                };
+            }).ToList();
+        }
+
+        public async Task PerformUpdate()
+        {
+            using(var context = new PersistenceContext())
+            {
+                context.Attach(_serverState);
+
+                await UpdateServerState(context);
+
+                await new MatchState(_serverState).ProcessMatch(context);
+
+                await context.SaveChangesAsync();
+            }
+        }
+    }
+}

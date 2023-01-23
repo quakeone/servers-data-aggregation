@@ -1,7 +1,10 @@
 ﻿//using ServerDataAggregation.Persistence;
+using Microsoft.EntityFrameworkCore.ChangeTracking.Internal;
+using Microsoft.EntityFrameworkCore.Metadata.Internal;
 using ServerDataAggregation.Persistence;
 using ServerDataAggregation.Persistence.Models;
 using ServersDataAggregation.Common;
+using ServersDataAggregation.Common.Model;
 using ServersDataAggregation.Query;
 using System;
 using System.Collections.Generic;
@@ -26,11 +29,13 @@ internal class QueryServer
         _serverState = serverState;
     }
 
+    
+
     private Tuple<Common.Model.ServerSnapshot?, ServerStatus> GetSnapshot()
     {
         int pRetryCount = 0;
         ServerStatus status = ServerStatus.Running;
-        Server server = _serverState.ServerDefinition;
+        ServerDataAggregation.Persistence.Models.Server server = _serverState.ServerDefinition;
         do
         {
             string retryString = "";
@@ -66,50 +71,39 @@ internal class QueryServer
         return new Tuple<Common.Model.ServerSnapshot?, ServerStatus>(null, status);
     }
 
-    public void DoQuery ()
+    private async Task FailedQuery(ServerStatus status)
     {
-        var now = DateTime.UtcNow;
-        var snapshotResult = GetSnapshot();
         using (var context = new PersistenceContext())
         {
             context.ServerState.Attach(_serverState);
-            _serverState.LastQuery = now;
-            _serverState.LastQueryResult = (int)snapshotResult.Item2;
 
-            var snapshot = snapshotResult.Item1;
+            _serverState.LastQuery = DateTime.UtcNow;
+            _serverState.LastQueryResult = (int)status;
+            _serverState.FailedQueryAttempts++;
+            await context.SaveChangesAsync();
+        }
+    }
 
-            if (snapshot == null)
-            {
-                _serverState.FailedQueryAttempts++;
-            }
-            else 
-            {
-                _serverState.TimeStamp = now;
-                context.ServerSnapshots.Add(new ServerSnapshot
-                {
-                    ServerId = _serverState.ServerDefinition.ServerId,
-                    Hostname = snapshot.ServerName,
-                    Map = snapshot.Map,
-                    IpAddress = snapshot.IpAddress,
-                    ServerSettings = JsonSerializer.Serialize(snapshot.ServerSettings),
-                    TimeStamp = DateTime.UtcNow,
-                    MaxPlayers = snapshot.MaxPlayerCount,
-                    Mod = snapshot.Mod,
-                    Mode = snapshot.Mode,
-                    Players = snapshot.Players.Select(player => new PlayerSnapshot
-                    {
-                        Frags = player.Frags,
-                        ShirtColor = player.ShirtColor,
-                        PantColor = player.PantColor,
-                        Skin = player.SkinName,
-                        Model = player.ModelName,
-                        Name = player.Name,
-                        Ping = player.Ping,
-                        PlayTime = player.PlayTime
-                    }).ToList()
-                });
-            }
-            context.SaveChanges();
+    private async Task SuccessQuery(Common.Model.ServerSnapshot snapshot)
+    {
+        _serverState.LastQuery = DateTime.UtcNow;
+        _serverState.LastQueryResult = (int)ServerStatus.Running;
+
+        var stateUpdate = new StateUpdate(_serverState, snapshot);
+        await stateUpdate.PerformUpdate();
+    }
+
+    public async Task DoQuery ()
+    {
+        var snapshotResult = GetSnapshot();
+
+        if (snapshotResult.Item2 == ServerStatus.Running)
+        {
+            await SuccessQuery(snapshotResult.Item1);
+        }
+        else
+        {
+            await FailedQuery(snapshotResult.Item2);
         }
     }
 }
