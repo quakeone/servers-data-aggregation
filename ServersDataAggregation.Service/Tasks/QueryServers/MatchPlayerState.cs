@@ -9,7 +9,6 @@ namespace ServersDataAggregation.Service.Tasks.QueryServers
 {
     public class MatchPlayerState
     {
-        public int Number { get; set; }
         public PlayerMatch? match { get; set; }
         public PlayerState? state { get; set; }
 

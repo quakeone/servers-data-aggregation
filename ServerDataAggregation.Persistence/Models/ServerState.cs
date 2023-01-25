@@ -49,6 +49,13 @@ namespace ServerDataAggregation.Persistence.Models
         [Column("query_result")]
         public virtual int LastQueryResult { get; set; }
 
+        public override string ToString()
+        {
+            if (ServerDefinition == null) {
+                return "New Server";
+            }
+            return ServerDefinition.Address + ":" + ServerDefinition.Port;
+        }
     }
 
     [NotMapped]
@@ -58,6 +65,10 @@ namespace ServerDataAggregation.Persistence.Models
         /// Player's Name
         /// </summary>
         public string Name { get; set; }
+        /// <summary>
+        /// Player's Name (in base64)
+        /// </summary>
+        public string NameRaw { get; set; }
         /// <summary>
         /// Player's Number
         /// </summary>
@@ -94,6 +105,10 @@ namespace ServerDataAggregation.Persistence.Models
         /// Join Timestamp of Player
         /// </summary>
         public DateTime JoinTime { get; set; }
+        /// <summary>
+        /// Join Timestamp of Player
+        /// </summary>
+        public int PlayerType { get; set; }
     }
 
     public class ServerStateConfiguration : IEntityTypeConfiguration<ServerState>

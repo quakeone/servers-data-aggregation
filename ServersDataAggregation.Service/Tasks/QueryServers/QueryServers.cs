@@ -57,18 +57,18 @@ public class QueryServers
                     {
                         // Connected to the server, no response however
                         case ServerStatus.NotResponding:
-                            if (candidate.FailedQueryAttempts > 10)
-                                return candidate.LastQuery > DateTime.UtcNow.AddMinutes(-1);
+                            if (candidate.FailedQueryAttempts > 3)
+                                return candidate.LastQuery < DateTime.UtcNow.AddHours(-1);
                             break;
                         case ServerStatus.NotFound:
                             // Couldn't connect or find the server
-                            if (candidate.FailedQueryAttempts > 10)
-                                return candidate.LastQuery > DateTime.UtcNow.AddHours(-10);
+                            if (candidate.FailedQueryAttempts > 3)
+                                return candidate.LastQuery < DateTime.UtcNow.AddHours(-10);
                             break;
                         case ServerStatus.QueryError:
                             // Couldn't find the server
-                            if (candidate.FailedQueryAttempts > 10)
-                                return candidate.LastQuery > DateTime.UtcNow.AddHours(-1);
+                            if (candidate.FailedQueryAttempts > 3)
+                                return candidate.LastQuery < DateTime.UtcNow.AddHours(-1);
                             break;
                     }
                 }

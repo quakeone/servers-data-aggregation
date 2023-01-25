@@ -18,6 +18,8 @@ namespace ServerDataAggregation.Persistence.Models
         public virtual ServerMatch ServerMatch { get; set; }
         [Column("name")]
         public virtual string Name { get; set; }
+        [Column("name_raw")]
+        public virtual string NameRaw { get; set; }
         [Column("number")]
         public virtual int Number { get; set; }
         [Column("shirt_color")]
@@ -30,6 +32,8 @@ namespace ServerDataAggregation.Persistence.Models
         public virtual string? Skin { get; set; }
         [Column("frags")]
         public virtual int Frags { get; set; }
+        [Column("type")]
+        public virtual int PlayerType { get; set; }
         [Column("player_match_start")]
         public virtual DateTime? PlayerMatchStart { get; set; }
         [Column("player_match_end")]

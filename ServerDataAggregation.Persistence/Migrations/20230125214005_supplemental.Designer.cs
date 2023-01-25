@@ -12,8 +12,8 @@ using ServerDataAggregation.Persistence;
 namespace ServerDataAggregation.Persistence.Migrations
 {
     [DbContext(typeof(PersistenceContext))]
-    [Migration("20230123020159_initial")]
-    partial class initial
+    [Migration("20230125214005_supplemental")]
+    partial class supplemental
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -47,6 +47,11 @@ namespace ServerDataAggregation.Persistence.Migrations
                         .HasColumnType("text")
                         .HasColumnName("name");
 
+                    b.Property<string>("NameRaw")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("name_raw");
+
                     b.Property<int>("Number")
                         .HasColumnType("integer")
                         .HasColumnName("number");
@@ -62,6 +67,10 @@ namespace ServerDataAggregation.Persistence.Migrations
                     b.Property<DateTime?>("PlayerMatchStart")
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("player_match_start");
+
+                    b.Property<int>("PlayerType")
+                        .HasColumnType("integer")
+                        .HasColumnName("type");
 
                     b.Property<int>("ShirtColor")
                         .HasColumnType("integer")

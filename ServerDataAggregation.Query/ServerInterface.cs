@@ -80,7 +80,6 @@ public class ServerInterface
         }
         catch (Exception ex)
         {
-            Console.WriteLine("Error querying " + pServerAddress + ": " + ex.Message);
             throw new ServerQueryParseException(ex);
         }
     }

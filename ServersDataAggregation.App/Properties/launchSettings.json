@@ -1,0 +1,10 @@
+{
+  "profiles": {
+    "ServersDataAggregation.App": {
+      "commandName": "Project",
+      "environmentVariables": {
+        "QE_PSK": "7a55b980c49b9ae4d4ffdb3513c2e471d94b14c22077ed86"
+      }
+    }
+  }
+}

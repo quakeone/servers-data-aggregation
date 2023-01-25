@@ -4,16 +4,15 @@ using ServerDataAggregation.Persistence;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
+using ServersDataAggregation.Common;
+using Microsoft.EntityFrameworkCore.ChangeTracking.Internal;
+using Db = ServerDataAggregation.Persistence.Models;
 
 namespace ServersDataAggregation.Service.Tasks.QueryServers
 {
     internal class MatchState
     {
-
         // Definitions:
         // Idle: Player  On server for very long time w/o score
         // Active Player: Non Observer, Non Host (or idle for a very long time?)
@@ -29,49 +28,32 @@ namespace ServersDataAggregation.Service.Tasks.QueryServers
         // Match.currentMap != snapshot.currentMap
         // Active(Snapshot.players) < 2
 
+        const int MATCH_LENGTH_ALLOWANCE_SECONDS = 60; // 1 min
         const int PLAYER_IDLE_ALLOWANCE_SECONDS = 1800; // 30 mins
 
         private ServerState _serverState;
-        private ILogger<StateUpdate> _logger;
 
         public MatchState(ServerState serverState)
         {
-            _logger = LoggerFactory.Create(options => { }).CreateLogger<StateUpdate>();
             _serverState = serverState;
         }
 
         private void ServerDebug(string message)
         {
-            _logger.LogDebug($"{_serverState.ServerDefinition}: ${message}");
+            Logging.LogDebug($"{_serverState.ServerDefinition}: {message}");
         }
 
         private T SnapshotPlayerValue<T>(
-            Func<PlayerSnapshot, T> getter, IEnumerable<PlayerSnapshot> playerSnapshots)
+            Func<Db.PlayerSnapshot, T> getter, IEnumerable<Db.PlayerSnapshot> playerSnapshots)
         {
-            var tryIt = playerSnapshots
+            return playerSnapshots
                     .Select(getter)
                     .GroupBy(s => s)
                     .MaxBy(g => g.Count())
                     .FirstOrDefault();
-            return tryIt;
-            //return playerSnapshots
-            //    .Aggregate(new Dictionary<T, int>() { { default, 0 } }, (dict, snapshot) =>
-            //    {
-            //        T val = getter(snapshot);
-            //        if (val == null) { return dict; }
-            //        if (!dict.ContainsKey(val))
-            //        {
-            //            dict.Add(val, 1);
-            //        }
-            //        else
-            //        {
-            //            dict[val]++;
-            //        }
-            //        return dict;
-            //    })
-            //    .Aggregate((keyValMax, keyVal) => keyValMax.Value < keyVal.Value ? keyVal : keyValMax)
-            //.Key;
         }
+
+
 
         /// <summary>
         ///  Dictionary of Player.Number PlayerState/PlayerMatch for comparison
@@ -82,17 +64,20 @@ namespace ServersDataAggregation.Service.Tasks.QueryServers
         private MatchPlayerState[] GetMatchPlayerState(
             IEnumerable<PlayerMatch> playerMatches, IEnumerable<PlayerState> playerStates)
         {
+            // Player matchup logic.
+            // Iterate in order
             var list = new List<MatchPlayerState>();
-            for (int i = 0; i < _serverState.MaxPlayers; i++)
+            var statesWip = playerStates.ToList();
+            foreach(var playerMatch in playerMatches.Where(pm => pm.PlayerMatchEnd == null))
             {
-                var match = playerMatches.FirstOrDefault(m => m.Number == i);
-                var state = playerStates.FirstOrDefault(m => m.Number == i);
-
-                if (match != null || state != null)
+                var stateCheck = statesWip.FirstOrDefault(s => s.NameRaw == playerMatch.NameRaw);
+                list.Add(new MatchPlayerState { match = playerMatch, state = stateCheck });
+                if (stateCheck != null)
                 {
-                    list.Add(new MatchPlayerState { Number = i, match = match, state = state });
+                    statesWip.Remove(stateCheck);
                 }
             }
+            list.AddRange(statesWip.Select(playerState => new MatchPlayerState { state = playerState }));
             return list.ToArray();
         }
 
@@ -117,9 +102,11 @@ namespace ServersDataAggregation.Service.Tasks.QueryServers
                 .Where(IsActivePlayer)
                 .ToArray();
 
-            if (activePlayers.Length > 1)
+            var playersWithFrags = activePlayers.Count(ap => ap.Frags > 0);
+
+            if (activePlayers.Length > 1 && playersWithFrags > 0)
             {
-                ServerDebug($"Match Start Detected - {activePlayers} activePlayers");
+                ServerDebug($"Match Start Detected - {activePlayers.Length} activePlayers and {playersWithFrags} with non-zero frags");
                 return true;
             }
             return false;
@@ -140,7 +127,7 @@ namespace ServersDataAggregation.Service.Tasks.QueryServers
             }
             if (activePlayers.Length < 2)
             {
-                ServerDebug($"Ending Match - {activePlayers} activePlayers");
+                ServerDebug($"Ending Match - {activePlayers.Length} activePlayers");
                 return true;
             }
             if (currentMatch.Map != _serverState.Map)
@@ -161,6 +148,25 @@ namespace ServersDataAggregation.Service.Tasks.QueryServers
             return false;
         }
 
+        private bool IsDiscardable(ServerMatch currentMatch)
+        {
+            var length = DateTime.UtcNow - currentMatch.MatchStart;
+            var totalFrags = currentMatch.PlayerMatches.Aggregate(0, (count, pm) => pm.Frags == -99 ? 0 : count + pm.Frags);
+
+            if (length.TotalSeconds < MATCH_LENGTH_ALLOWANCE_SECONDS)
+            {
+                ServerDebug($"Discarding Match - Length was {Math.Floor(length.TotalSeconds)}secs (threshold is {MATCH_LENGTH_ALLOWANCE_SECONDS}secs)");
+                return true;
+            }
+
+            if (totalFrags < 1)
+            {
+                ServerDebug($"Discarding Match - Total Frags was {totalFrags} (threshold is {1})");
+                return true;
+            }
+            return false;
+        }
+
         private PlayerMatch CreateNewPlayerMatch(PlayerState player) => new PlayerMatch
         {
             Frags = player.Frags,
@@ -168,7 +174,9 @@ namespace ServersDataAggregation.Service.Tasks.QueryServers
             ShirtColor = player.ShirtColor,
             Skin = player.Skin,
             Model = player.Model,
+            PlayerType = player.PlayerType,
             Name = player.Name,
+            NameRaw = player.NameRaw,
             Number = player.Number,
             PlayerMatchStart = DateTime.UtcNow
         };
@@ -183,6 +191,32 @@ namespace ServersDataAggregation.Service.Tasks.QueryServers
             PlayerMatches = playerState.Select(CreateNewPlayerMatch).ToList()
         };
 
+        // synchronize match players
+        private void UpdateMatch(ServerMatch match, MatchPlayerState[] matchDiffs) {
+            // update existing, remove not found
+            foreach (var diff in matchDiffs)
+            {
+                if (diff.match == null)
+                {
+                    match.PlayerMatches.Add(CreateNewPlayerMatch(diff.state));
+                }
+                else if (diff.state == null)
+                {
+                    diff.match.PlayerMatchEnd = DateTime.UtcNow;
+                } 
+                else
+                {
+                    diff.match.Frags = diff.state.Frags;
+                    diff.match.ShirtColor = diff.state.ShirtColor;
+                    diff.match.PantColor = diff.state.PantColor;
+                    diff.match.Skin = diff.state.Skin;
+                    diff.match.Model = diff.state.Model;
+                    // If leaves and comes back, reset the end state.
+                    diff.match.PlayerMatchEnd = null;
+                }
+            }
+        }
+
         internal async Task ProcessMatch(PersistenceContext context)
         {
             Debug.Assert(_serverState.Players != null, $"{_serverState.ServerDefinition}: Players array should always exist here.");
@@ -190,35 +224,56 @@ namespace ServersDataAggregation.Service.Tasks.QueryServers
             var match = await context
                 .ServerMatches
                 .Include(sm => sm.PlayerMatches)
-                .FirstOrDefaultAsync(sm => sm.Server.ServerId == _serverState.ServerDefinition.ServerId);
+                .FirstOrDefaultAsync(sm => 
+                    sm.Server.ServerId == _serverState.ServerDefinition.ServerId
+                    && sm.MatchEnd == null);
+
             if (match != null)
             {
                 var matchStateDiffs = GetMatchPlayerState(match.PlayerMatches, _serverState.Players);
 
-                if (IsEndMatch(match, matchStateDiffs))
-                {
-                    var matchHistory = await context.ServerSnapshots
-                        .Where(ss => ss.TimeStamp > match.MatchStart && ss.ServerId == match.Server.ServerId)
-                        .ToListAsync();
+                UpdateMatch(match, matchStateDiffs);
 
-                    // get past snapshots for data aggr
-                    foreach (var playerMatch in match.PlayerMatches)
+                // update
+                if (IsEndMatch(match, matchStateDiffs) )
+                {
+                    // discard match if junk
+                    if (IsDiscardable(match))
                     {
-                        var playerHistory = matchHistory.SelectMany(s => s.Players.Where(p => p.Number == playerMatch.Number));
-                        playerMatch.ShirtColor = SnapshotPlayerValue(s => s.ShirtColor, playerHistory);
-                        playerMatch.PantColor = SnapshotPlayerValue(s => s.ShirtColor, playerHistory);
-                        playerMatch.Skin = SnapshotPlayerValue(s => s.Skin, playerHistory);
-                        playerMatch.Model = SnapshotPlayerValue(s => s.Model, playerHistory);
-                        playerMatch.PlayerMatchEnd = DateTime.UtcNow;
+                        context.ServerMatches.Remove(match);
+                    } 
+                    else
+                    {
+                        var matchHistory = await context.ServerSnapshots
+                            .Where(ss => ss.TimeStamp > match.MatchStart && ss.ServerId == match.Server.ServerId)
+                            .ToListAsync();
+                        
+                        var playerMatches = match.PlayerMatches
+                            .GroupBy(pm => pm.NameRaw)
+                            .Where(g => g.Count() == 1)
+                            .Select(g => g.FirstOrDefault());
+                        
+                        // get past snapshots for data aggr
+                        foreach (var playerMatch in playerMatches)
+                        {
+                            // If there's dupe entries, don't bother.
+                            var playerHistory = matchHistory.SelectMany(s => s.Players.Where(p => p.NameRaw == playerMatch.NameRaw));
+                            if (playerHistory.Count() > 0)
+                            { 
+                                playerMatch.ShirtColor = SnapshotPlayerValue(s => s.ShirtColor, playerHistory);
+                                playerMatch.PantColor = SnapshotPlayerValue(s => s.ShirtColor, playerHistory);
+                                playerMatch.Skin = SnapshotPlayerValue(s => s.Skin, playerHistory);
+                                playerMatch.Model = SnapshotPlayerValue(s => s.Model, playerHistory);
+                            }
+                            if (playerMatch.PlayerMatchEnd == null)
+                            {
+                                playerMatch.PlayerMatchEnd = DateTime.UtcNow;
+                            }
+                        }
+                        match.MatchEnd = DateTime.UtcNow;
                     }
-                    match.MatchEnd = DateTime.UtcNow;
 
                     match = null;
-                }
-                else
-                {
-                    // continuing match, perform update.
-
                 }
             }
 

@@ -1,4 +1,5 @@
 ﻿using ServersDataAggregation.Common.Model;
+using ServersDataAggregation.Query.Games.Common;
 using ServersDataAggregation.Query.Games.NetQuake.Packets;
 using System.Text;
 
@@ -6,6 +7,7 @@ namespace ServersDataAggregation.Query.Games.NetQuake;
 
 public class NetQuake : IServerInfoProvider
 {
+    static byte[] UNCONNECTED_NAME = Encoding.ASCII.GetBytes("unconnected");
     public ServerSnapshot GetServerInfo(string pServerAddress, int pServerPort)
     {
         var udp = new UdpUtility(pServerAddress, pServerPort);
@@ -62,6 +64,9 @@ public class NetQuake : IServerInfoProvider
             if (playerInfoReply.PlayerName == null || playerInfoReply.PlayerName.Length == 0)
                 break;
 
+            if (playerInfoReply.PlayerName.SequenceEqual(NetQuake.UNCONNECTED_NAME))
+                continue;
+
             players.Add(CreatePlayerSnapshot(playerInfoReply));
         }
         
@@ -108,7 +113,8 @@ public class NetQuake : IServerInfoProvider
     {
         var playerSnapshot = new PlayerSnapshot
         {
-            Name = Encoding.UTF8.GetString(pReplyPacket.PlayerName),
+            NameRaw = pReplyPacket.PlayerName,
+            Name = NameUtils.PlayerBytesToString(pReplyPacket.PlayerName),
             FeatureFlags = PlayerSnapshotFeatureFlags.Clothes
         };
 
@@ -124,5 +130,6 @@ public class NetQuake : IServerInfoProvider
 
         return playerSnapshot;
     }
+
 }
 

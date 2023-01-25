@@ -44,6 +44,10 @@ namespace ServerDataAggregation.Persistence.Models
         /// </summary>
         public string Name { get; set; }
         /// <summary>
+        /// Player's Name (in base64)
+        /// </summary>
+        public string NameRaw { get; set; }
+        /// <summary>
         /// Player's Name
         /// </summary>
         public int Number { get; set; }
@@ -75,6 +79,10 @@ namespace ServerDataAggregation.Persistence.Models
         /// Current server reported playing time of player
         /// </summary>
         public TimeSpan PlayTime { get; set; }
+        /// <summary>
+        /// Join Timestamp of Player
+        /// </summary>
+        public int PlayerType { get; set; }
     }
 
     public class ServerSnapshotConfiguration : IEntityTypeConfiguration<ServerSnapshot>

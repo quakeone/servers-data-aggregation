@@ -1,14 +1,14 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using ServerDataAggregation.Persistence;
-using ServersDataAggregation.Service;
+using ServersDataAggregation.Common;
 using ServersDataAggregation.Service.Scheduler;
 
 public class Program
 {
     public static void Main(string[] args)
     {
+        Logging.Initialize();
         CreateHostBuilder(args).Build().Run();
     }
 

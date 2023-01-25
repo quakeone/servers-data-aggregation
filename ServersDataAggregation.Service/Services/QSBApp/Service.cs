@@ -1,18 +1,18 @@
-﻿using Microsoft.Extensions.Logging;
+﻿using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.Extensions.Logging;
 using ServerDataAggregation.Persistence.Models;
+using ServersDataAggregation.Common;
+using ServersDataAggregation.Common.Model;
 using System.Text.Json;
+using Db = ServerDataAggregation.Persistence.Models;
 
 namespace ServersDataAggregation.Service.Services.QSBApp
 {
     internal class Service
     {
-        private ILogger<Services.QSBApp.Service> _logger;
-        public Service(){
-            _logger = LoggerFactory.Create(options => {}).CreateLogger<Services.QSBApp.Service>();
-        }
-        private Server Transform(QSBServer server)
+        private Db.Server Transform(QSBServer server)
         {
-            return new Server
+            return new Db.Server
             {
                 GameId = server.GameId,
                 Port = server.Port,
@@ -25,7 +25,7 @@ namespace ServersDataAggregation.Service.Services.QSBApp
                 ApiKey = server.ApiKey ?? new Guid().ToString()
             };
         }
-        public async Task<Server[]> GetServers()
+        public async Task<Db.Server[]> GetServers()
         {
             using (var httpClient = new HttpClient())
             {
@@ -36,10 +36,25 @@ namespace ServersDataAggregation.Service.Services.QSBApp
                     try {
                         qsbServers = JsonSerializer.Deserialize<List<QSBServer>>(apiResponse);
                     } catch(Exception ex) {
-                        _logger.Log(LogLevel.Error, ex, "Failed to parse feed from QSB Server");
-                        return new Server[0];
+                        Logging.LogError(ex, "Failed to parse feed from QSB Server");
+                        return new Db.Server[0];
                     }
-                    return qsbServers.Select(Transform).ToArray();
+                    return qsbServers
+                        .Select(Transform)
+                        .Concat(new Db.Server[] {
+                            new Db.Server()
+                            {
+                                GameId = 0,
+                                Port = 26020,
+                                Address = "sv.netquake.io",
+                                Locality = "somewhere",
+                                QueryInterval = 10,
+                                Mod = "CRMOD",
+                                Active = true,
+                                ApiKey = new Guid().ToString()
+                            }
+                        })
+                        .ToArray();
                 }
             }
         }

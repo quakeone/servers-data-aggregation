@@ -20,7 +20,11 @@ namespace ServersDataAggregation.Common.Model
         /// </summary>
         public string Name { get; set; }
         /// <summary>
-        /// Player's Name (utf8)
+        /// Player's Name Byte Value (for extended ascii)
+        /// </summary>
+        public byte[] NameRaw { get; set; }
+        /// <summary>
+        /// Player's Number
         /// </summary>
         public int Number { get; set; }
         /// <summary>

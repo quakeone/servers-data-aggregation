@@ -3,6 +3,9 @@ using ServersDataAggregation.Query.Games.NetQuake.Packets;
 using ServersDataAggregation.Common.Model;
 using ServersDataAggregation.Query.Dtls;
 using ServersDataAggregation.Common.Enums;
+using System.Net.Sockets;
+using Org.BouncyCastle.Crypto.Tls;
+using ServersDataAggregation.Query.Games.Common;
 
 namespace ServersDataAggregation.Query.Games.QuakeEnhanced;
 
@@ -31,7 +34,23 @@ public class QuakeEnhanced : IServerInfoProvider
                 throw new ArgumentException("Quake Enhanced needs a PSK for traffic encryption");
             }
 
-            return new DtlsUtility(StringToBytes(psk), _pskId, pServerAddress, pServerPort);
+            try {
+                return new DtlsUtility(StringToBytes(psk), _pskId, pServerAddress, pServerPort);
+            }
+            catch (TlsFatalAlert ex)
+            {
+                throw;
+            }
+            catch (Exception ex)
+            {
+                // rethrowing here because apparently the type isn't coming through the lib code
+                if (ex.Message == "internal_error(80)")
+                {
+                    throw new TlsFatalAlert(AlertDescription.internal_error);
+                }
+                
+                throw;
+            }
         }
     }
 
@@ -58,7 +77,6 @@ public class QuakeEnhanced : IServerInfoProvider
     public ServerSnapshot GetServerInfo(string pServerAddress, int pServerPort)
     {
         var net = GetNetUtility(pServerAddress, pServerPort, _serverParams);
-        ServerSnapshot serverInfo = new ServerSnapshot();
 
         byte[] bytesReceived = net.SendBytes(new ServerInfoRequest().GetPacket());
         if (bytesReceived == null)
@@ -127,12 +145,12 @@ public class QuakeEnhanced : IServerInfoProvider
             players.Add(CreatePlayerSnapshot(playerInfoReply));
         }
 
-        serverInfo.Port = pServerPort;
-        serverInfo.IpAddress = pServerAddress; // udp.RemoteIpAddress;
+        serverSnapshot.Port = pServerPort;
+        serverSnapshot.IpAddress = pServerAddress; // udp.RemoteIpAddress;
         serverSnapshot.Players = players.ToArray();
-        serverInfo.ServerSettings = serverRules.ToArray();
+        serverSnapshot.ServerSettings = serverRules.ToArray();
 
-        return serverInfo;
+        return serverSnapshot;
     }
 
     private ReplyPacket? GetReplyPacket(byte[] pBytes)
@@ -165,7 +183,8 @@ public class QuakeEnhanced : IServerInfoProvider
         return new PlayerSnapshot
         {
             FeatureFlags = PlayerSnapshotFeatureFlags.Clothes | PlayerSnapshotFeatureFlags.PlayerType,
-            Name = Encoding.UTF8.GetString(pReplyPacket.PlayerName),
+            NameRaw = pReplyPacket.PlayerName,
+            Name = NameUtils.PlayerBytesToString(pReplyPacket.PlayerName),
             Number = (int)pReplyPacket.PlayerNumber,
             PlayerType = pReplyPacket.Address == "LOCAL" ?
                     PlayerType.Host :

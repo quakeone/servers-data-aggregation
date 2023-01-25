@@ -1,17 +1,9 @@
-﻿using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Logging;
+﻿using Microsoft.Extensions.Logging;
 using ServerDataAggregation.Persistence;
 using ServerDataAggregation.Persistence.Models;
-using ServersDataAggregation.Common.Model;
-using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
-using System.Net;
-using System.Numerics;
+using ServersDataAggregation.Common;
 using System.Text;
 using System.Text.Json;
-using System.Threading.Tasks;
 using Db = ServerDataAggregation.Persistence.Models;
 
 namespace ServersDataAggregation.Service.Tasks.QueryServers
@@ -20,11 +12,9 @@ namespace ServersDataAggregation.Service.Tasks.QueryServers
     {
         private ServerState _serverState;
         private Common.Model.ServerSnapshot _snapshot;
-        private ILogger<StateUpdate> _logger;
 
         public StateUpdate(ServerState serverState, Common.Model.ServerSnapshot snapshot)
         {
-            _logger = LoggerFactory.Create(options => { }).CreateLogger<StateUpdate>();
             _serverState = serverState;
             _snapshot = snapshot;
         }
@@ -50,6 +40,7 @@ namespace ServersDataAggregation.Service.Tasks.QueryServers
                     Skin = player.SkinName,
                     Model = player.ModelName,
                     Name = player.Name,
+                    NameRaw = Convert.ToBase64String(player.NameRaw),
                     Number = player.Number,
                     Ping = player.Ping,
                     PlayTime = player.PlayTime
@@ -99,10 +90,13 @@ namespace ServersDataAggregation.Service.Tasks.QueryServers
             _serverState.Map = _snapshot.Map;
             _serverState.Mod = _snapshot.Mod;
             _serverState.Mode = _snapshot.Mode;
+            _serverState.Hostname = _snapshot.ServerName;
+            _serverState.ServerSettings = JsonSerializer.Serialize(_snapshot.ServerSettings);
             _serverState.Players = _snapshot.Players.Select(player =>
             {
-                var prevPlayerState = _serverState.Players?.FirstOrDefault(p => p.Number == player.Number && p.Name == player.Name);
-                var prevPlayerSnap = prevSnapshot.Players.FirstOrDefault(p => p.Number == player.Number && p.Name == player.Name);
+                var nameRaw = Convert.ToBase64String(player.NameRaw);
+                var prevPlayerState = _serverState.Players?.FirstOrDefault(p =>  p.NameRaw == nameRaw);
+                var prevPlayerSnap = prevSnapshot.Players.FirstOrDefault(p => p.NameRaw == nameRaw);
 
                 var joinTime = prevPlayerState == null || prevPlayerState.JoinTime == null
                         ? (DateTime.UtcNow - player.PlayTime)
@@ -117,9 +111,11 @@ namespace ServersDataAggregation.Service.Tasks.QueryServers
                     Skin = player.SkinName,
                     Model = player.ModelName,
                     Name = player.Name,
+                    NameRaw = nameRaw,
                     Number = player.Number,
                     Ping = player.Ping,
-                    JoinTime = joinTime
+                    JoinTime = joinTime,
+                    PlayerType = (int)player.PlayerType
                 };
             }).ToList();
         }
@@ -129,6 +125,10 @@ namespace ServersDataAggregation.Service.Tasks.QueryServers
             using(var context = new PersistenceContext())
             {
                 context.Attach(_serverState);
+
+                _serverState.LastQuery = DateTime.UtcNow;
+                _serverState.LastQueryResult = (int)ServerStatus.Running;
+                _serverState.FailedQueryAttempts = 0;
 
                 await UpdateServerState(context);
 

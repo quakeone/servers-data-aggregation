@@ -1,6 +1,8 @@
 ﻿//using ServerDataAggregation.Persistence;
 using Microsoft.EntityFrameworkCore.ChangeTracking.Internal;
 using Microsoft.EntityFrameworkCore.Metadata.Internal;
+using Microsoft.Extensions.Logging;
+using Npgsql.Replication;
 using ServerDataAggregation.Persistence;
 using ServerDataAggregation.Persistence.Models;
 using ServersDataAggregation.Common;
@@ -8,6 +10,7 @@ using ServersDataAggregation.Common.Model;
 using ServersDataAggregation.Query;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Text.Json;
@@ -29,8 +32,6 @@ internal class QueryServer
         _serverState = serverState;
     }
 
-    
-
     private Tuple<Common.Model.ServerSnapshot?, ServerStatus> GetSnapshot()
     {
         int pRetryCount = 0;
@@ -44,7 +45,7 @@ internal class QueryServer
                 Thread.Sleep(1000);
                 retryString = " (Retry #" + pRetryCount + ")";
             }
-            System.Diagnostics.Debug.WriteLine("Querying " + server.Address + ":" + server.Port.ToString() + retryString);
+            Logging.LogTrace("Querying " + server.Address + ":" + server.Port.ToString() + retryString);
             try
             {
                 return new Tuple<Common.Model.ServerSnapshot?, ServerStatus>(
@@ -59,8 +60,9 @@ internal class QueryServer
             {
                 status = ServerStatus.NotFound;
             }
-            catch (ServerQueryParseException)
+            catch (ServerQueryParseException ex)
             {
+                Logging.LogWarning($"{server} query exception " + ex.ToString());
                 status = ServerStatus.QueryError;
             }
 
@@ -80,14 +82,13 @@ internal class QueryServer
             _serverState.LastQuery = DateTime.UtcNow;
             _serverState.LastQueryResult = (int)status;
             _serverState.FailedQueryAttempts++;
+
             await context.SaveChangesAsync();
         }
     }
 
     private async Task SuccessQuery(Common.Model.ServerSnapshot snapshot)
     {
-        _serverState.LastQuery = DateTime.UtcNow;
-        _serverState.LastQueryResult = (int)ServerStatus.Running;
 
         var stateUpdate = new StateUpdate(_serverState, snapshot);
         await stateUpdate.PerformUpdate();
@@ -95,14 +96,24 @@ internal class QueryServer
 
     public async Task DoQuery ()
     {
+        Stopwatch stopWatch = new Stopwatch();
+        stopWatch.Start();
+
         var snapshotResult = GetSnapshot();
+
+        stopWatch.Stop();
+
+        // Get the elapsed time as a TimeSpan value.
+        TimeSpan ts = stopWatch.Elapsed;
 
         if (snapshotResult.Item2 == ServerStatus.Running)
         {
+            Debug.WriteLine($"Successful query on {_serverState} in {ts.Seconds}.{ts.Milliseconds} seconds");
             await SuccessQuery(snapshotResult.Item1);
         }
         else
         {
+            Debug.WriteLine($"Failed query on {_serverState} in {ts.Seconds}.{ts.Milliseconds} seconds");
             await FailedQuery(snapshotResult.Item2);
         }
     }
