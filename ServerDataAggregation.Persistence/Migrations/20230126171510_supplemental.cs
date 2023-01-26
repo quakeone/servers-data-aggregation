@@ -4,6 +4,7 @@
 
 namespace ServerDataAggregation.Persistence.Migrations
 {
+
     /// <inheritdoc />
     public partial class supplemental : Migration
     {
@@ -67,4 +68,3 @@ WHERE s.active = true
         }
     }
 }
-

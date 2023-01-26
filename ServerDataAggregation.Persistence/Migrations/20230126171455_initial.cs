@@ -142,9 +142,51 @@ namespace ServerDataAggregation.Persistence.Migrations
                         onDelete: ReferentialAction.Cascade);
                 });
 
+            migrationBuilder.CreateTable(
+                name: "player_match_progress",
+                columns: table => new
+                {
+                    playermatchprogressid = table.Column<int>(name: "player_match_progress_id", type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    playermatchid = table.Column<int>(name: "player_match_id", type: "integer", nullable: false),
+                    servermatchid = table.Column<int>(name: "server_match_id", type: "integer", nullable: false),
+                    timestamp = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    shirtcolor = table.Column<int>(name: "shirt_color", type: "integer", nullable: false),
+                    pantcolor = table.Column<int>(name: "pant_color", type: "integer", nullable: false),
+                    model = table.Column<string>(type: "text", nullable: true),
+                    skin = table.Column<string>(type: "text", nullable: true),
+                    frags = table.Column<int>(type: "integer", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_player_match_progress", x => x.playermatchprogressid);
+                    table.ForeignKey(
+                        name: "FK_player_match_progress_player_match_player_match_id",
+                        column: x => x.playermatchid,
+                        principalTable: "player_match",
+                        principalColumn: "player_match_id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_player_match_progress_server_match_server_match_id",
+                        column: x => x.servermatchid,
+                        principalTable: "server_match",
+                        principalColumn: "server_match_id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
             migrationBuilder.CreateIndex(
                 name: "IX_player_match_server_match_id",
                 table: "player_match",
+                column: "server_match_id");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_player_match_progress_player_match_id",
+                table: "player_match_progress",
+                column: "player_match_id");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_player_match_progress_server_match_id",
+                table: "player_match_progress",
                 column: "server_match_id");
 
             migrationBuilder.CreateIndex(
@@ -162,13 +204,16 @@ namespace ServerDataAggregation.Persistence.Migrations
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropTable(
-                name: "player_match");
+                name: "player_match_progress");
 
             migrationBuilder.DropTable(
                 name: "server_snapshot");
 
             migrationBuilder.DropTable(
                 name: "server_state");
+
+            migrationBuilder.DropTable(
+                name: "player_match");
 
             migrationBuilder.DropTable(
                 name: "server_match");

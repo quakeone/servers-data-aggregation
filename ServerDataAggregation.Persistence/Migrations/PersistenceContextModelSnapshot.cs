@@ -87,6 +87,54 @@ namespace ServerDataAggregation.Persistence.Migrations
                     b.ToTable("player_match");
                 });
 
+            modelBuilder.Entity("ServerDataAggregation.Persistence.Models.PlayerMatchProgress", b =>
+                {
+                    b.Property<int>("PlayerMatchProgressId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasColumnName("player_match_progress_id");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("PlayerMatchProgressId"));
+
+                    b.Property<int>("Frags")
+                        .HasColumnType("integer")
+                        .HasColumnName("frags");
+
+                    b.Property<string>("Model")
+                        .HasColumnType("text")
+                        .HasColumnName("model");
+
+                    b.Property<int>("PantColor")
+                        .HasColumnType("integer")
+                        .HasColumnName("pant_color");
+
+                    b.Property<int>("ShirtColor")
+                        .HasColumnType("integer")
+                        .HasColumnName("shirt_color");
+
+                    b.Property<string>("Skin")
+                        .HasColumnType("text")
+                        .HasColumnName("skin");
+
+                    b.Property<DateTime>("Timestamp")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("timestamp");
+
+                    b.Property<int>("player_match_id")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("server_match_id")
+                        .HasColumnType("integer");
+
+                    b.HasKey("PlayerMatchProgressId");
+
+                    b.HasIndex("player_match_id");
+
+                    b.HasIndex("server_match_id");
+
+                    b.ToTable("player_match_progress");
+                });
+
             modelBuilder.Entity("ServerDataAggregation.Persistence.Models.Server", b =>
                 {
                     b.Property<int>("ServerId")
@@ -320,6 +368,25 @@ namespace ServerDataAggregation.Persistence.Migrations
                         .HasForeignKey("server_match_id")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.Navigation("ServerMatch");
+                });
+
+            modelBuilder.Entity("ServerDataAggregation.Persistence.Models.PlayerMatchProgress", b =>
+                {
+                    b.HasOne("ServerDataAggregation.Persistence.Models.PlayerMatch", "PlayerMatch")
+                        .WithMany()
+                        .HasForeignKey("player_match_id")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("ServerDataAggregation.Persistence.Models.ServerMatch", "ServerMatch")
+                        .WithMany()
+                        .HasForeignKey("server_match_id")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("PlayerMatch");
 
                     b.Navigation("ServerMatch");
                 });

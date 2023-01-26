@@ -47,10 +47,10 @@ namespace ServersDataAggregation.Service.Tasks.QueryServers
             Func<Db.PlayerSnapshot, T> getter, IEnumerable<Db.PlayerSnapshot> playerSnapshots)
         {
             return playerSnapshots
-                    .Select(getter)
-                    .GroupBy(s => s)
-                    .MaxBy(g => g.Count())
-                    .FirstOrDefault();
+                .Select(getter)
+                .GroupBy(s => s)
+                .MaxBy(g => g.Count())
+                .FirstOrDefault();
         }
 
 
@@ -191,6 +191,18 @@ namespace ServersDataAggregation.Service.Tasks.QueryServers
             PlayerMatches = playerState.Select(CreateNewPlayerMatch).ToList()
         };
 
+        private PlayerMatchProgress CreatePlayerMatchPorgress (ServerMatch match, PlayerMatch playerMatch) => new PlayerMatchProgress 
+        {
+            PlayerMatch = playerMatch,
+            ServerMatch = match,
+            Timestamp = DateTime.UtcNow,
+            Frags = playerMatch.Frags,
+            PantColor = playerMatch.PantColor,
+            ShirtColor = playerMatch.ShirtColor,
+            Skin = playerMatch.Skin,
+            Model = playerMatch.Model
+        };
+
         // synchronize match players
         private void UpdateMatch(ServerMatch match, MatchPlayerState[] matchDiffs) {
             // update existing, remove not found
@@ -232,10 +244,18 @@ namespace ServersDataAggregation.Service.Tasks.QueryServers
             {
                 var matchStateDiffs = GetMatchPlayerState(match.PlayerMatches, _serverState.Players);
 
-                UpdateMatch(match, matchStateDiffs);
-
                 // update
-                if (IsEndMatch(match, matchStateDiffs) )
+
+                if (!IsEndMatch(match, matchStateDiffs) ) {
+                    UpdateMatch(match, matchStateDiffs);
+
+                    if (match.PlayerMatches.Count > 0) {
+                        await context.PlayerMatchProgresses.AddRangeAsync(
+                            match.PlayerMatches.Select(playerMatch => 
+                                CreatePlayerMatchPorgress(match, playerMatch)));
+                    }
+                } 
+                else
                 {
                     // discard match if junk
                     if (IsDiscardable(match))
@@ -280,7 +300,14 @@ namespace ServersDataAggregation.Service.Tasks.QueryServers
 
             if (match == null && IsStartMatch())
             {
-                await context.ServerMatches.AddAsync(CreateServerMatch(_serverState, _serverState.Players));
+                var serverMatch = CreateServerMatch(_serverState, _serverState.Players);
+                await context.ServerMatches.AddAsync(serverMatch);
+
+                if (serverMatch.PlayerMatches.Count > 0) {
+                    await context.PlayerMatchProgresses.AddRangeAsync(
+                        serverMatch.PlayerMatches.Select(playerMatch => 
+                            CreatePlayerMatchPorgress(serverMatch, playerMatch)));
+                }
             }
         }
     }
