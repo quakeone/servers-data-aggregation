@@ -4,12 +4,12 @@ services:
     image: postgres:12-alpine
     ports: 
       - "5555:5432"
-    # volumes: 
-    #   - db_volume:/var/lib/postgresql/data
+    volumes: 
+      - db_volume:/var/lib/postgresql/data
     environment: 
       POSTGRES_USER: "docker"
       POSTGRES_PASSWORD: "docker"
       POSTGRES_DB: "servers"
-# volumes: 
-#   db_volume:
+volumes: 
+  db_volume: {}
 # docker run --rm -p 5555:5432 -e POSTGRES_USER=docker -e POSTGRES_PASSWORD=docker -e POSTGRES_DB=servers postgres:12-alpine

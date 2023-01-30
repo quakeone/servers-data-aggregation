@@ -35,14 +35,21 @@ jobs:
         docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
   deploy:
     name: Deploy to Env
-    runs-on: ubuntu-latest
+    runs-on: quakeone-instance
+    
     steps:
-    - name: executing remote ssh commands using ssh key
-      uses: appleboy/ssh-action@v0.1.7
-      with:
-        host: ${{ env.EC2 }}
-        username: ec2-user
-        key: ${{ secrets.SSH_PRIVATE_KEY }}
-        port: 23
-        script: |
-          whoami
+    - name: Stop existing container
+      continue-on-error: true
+      run: docker stop data-aggregation
+
+    - name: Run new container
+      run: |
+        docker run -d \
+          -e DB_USER=docker \
+          -e DB_HOST=postgres \
+          -e DB=servers \
+          -e DB_PASS={{ secrets.DB_PASS }} \
+          -e QE_PSK={{ secrets.QE_PSK }} \
+          --network=data-aggregation \
+          --restart=always \
+          $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
