@@ -34,12 +34,15 @@ jobs:
         docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
         docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
   deploy:
-  - name: executing remote ssh commands using ssh key
-    uses: appleboy/ssh-action@v0.1.7
-    with:
-      host: ${{ env.EC2 }}
-      username: ec2-user
-      key: ${{ secrets.SSH_PRIVATE_KEY }}
-      port: 23
-      script: |
-        whoami
+    name: Deploy to Env
+    runs-on: ubuntu-latest
+    steps:
+    - name: executing remote ssh commands using ssh key
+      uses: appleboy/ssh-action@v0.1.7
+      with:
+        host: ${{ env.EC2 }}
+        username: ec2-user
+        key: ${{ secrets.SSH_PRIVATE_KEY }}
+        port: 23
+        script: |
+          whoami
