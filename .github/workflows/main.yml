@@ -42,6 +42,10 @@ jobs:
       continue-on-error: true
       run: docker stop data-aggregation
 
+    - name: Login to Amazon ECR
+      id: login-ecr
+      uses: aws-actions/amazon-ecr-login@v1
+
     - name: Run new container
       run: |
         docker run -d \
