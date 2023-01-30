@@ -5,7 +5,6 @@ on:
 
 env:
   AWS_REGION: us-east-2
-  ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
   ECR_REPOSITORY: servers-data-aggregation
   IMAGE_TAG: ${{ github.run_number }}
 jobs:
@@ -28,6 +27,8 @@ jobs:
       uses: aws-actions/amazon-ecr-login@v1
 
     - name: Build, tag, and push image to Amazon ECR
+      env:
+        ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
       run: |
         docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
         docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
@@ -40,7 +41,13 @@ jobs:
       continue-on-error: true
       run: docker stop data-aggregation
 
+    - name: Login to Amazon ECR
+      id: login-ecr
+      uses: aws-actions/amazon-ecr-login@v1
+
     - name: Run new container
+      env:
+        ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
       run: |
         docker run -d \
           -e DB_USER=docker \
