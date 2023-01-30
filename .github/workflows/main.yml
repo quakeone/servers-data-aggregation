@@ -64,4 +64,5 @@ jobs:
           -e QE_PSK={{ secrets.QE_PSK }} \
           --network=data-aggregation \
           --restart=always \
-          $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
+          --name data-aggregation \
+          $ECR_REPOSITORY:$IMAGE_TAG
