@@ -40,7 +40,7 @@ jobs:
     - name: Stop existing container
       continue-on-error: true
       run: docker stop data-aggregation
-      
+
     - name: RM existing container
       continue-on-error: true
       run: docker rm data-aggregation
@@ -64,9 +64,9 @@ jobs:
           -e "DB_USER=docker" \
           -e "DB_HOST=postgres" \
           -e "DB=servers" \
-          -e "DB_PASS={{ secrets.DB_PASS }}" \
+          -e "DB_PASS=${{ secrets.DB_PASS }}" \
           -e "DB_PORT=5432" \
-          -e "QE_PSK={{ secrets.QE_PSK }}" \
+          -e "QE_PSK=${{ secrets.QE_PSK }}" \
           --network=data-aggregation \
           --restart=always \
           --name data-aggregation \
