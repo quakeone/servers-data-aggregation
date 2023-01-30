@@ -2,6 +2,7 @@
 using Microsoft.EntityFrameworkCore.Internal;
 using ServerDataAggregation.Persistence;
 using ServerDataAggregation.Persistence.Models;
+using System.Text.Json;
 
 namespace ServersDataAggregation.Service.Tasks;
 
@@ -29,6 +30,7 @@ public class SynchronizeServers
         using (var context = new PersistenceContext())
         {
             var currentServers = await context.Servers.ToArrayAsync();
+
             var newServers = await SynchronizeQSB(currentServers);
             if (newServers.Length > 0)
             {

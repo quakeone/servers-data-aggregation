@@ -89,6 +89,7 @@ namespace ServersDataAggregation.Service.Tasks.QueryServers
 
             if (_serverState.IpAddress != _snapshot.IpAddress)
             {
+                _serverState.IpAddress = _snapshot.IpAddress;
                 var ipResult = await new Services.IpApi.Service().GetResult(_snapshot.IpAddress);
                 if (ipResult.status == "success")
                 {
