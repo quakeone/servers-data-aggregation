@@ -22,7 +22,8 @@ namespace ServersDataAggregation.Service.Services.QSBApp
                 Mod = server.ModificationCode,
                 Active = server.Active == 1,
                 Parameters = server.Parameters,
-                ApiKey = server.ApiKey ?? new Guid().ToString()
+                ApiKey = server.ApiKey ?? new Guid().ToString(),
+                Source = "QSB"
             };
         }
         public async Task<Db.Server[]> GetServers()
@@ -51,7 +52,8 @@ namespace ServersDataAggregation.Service.Services.QSBApp
                                 QueryInterval = 10,
                                 Mod = "CRMOD",
                                 Active = true,
-                                ApiKey = new Guid().ToString()
+                                ApiKey = new Guid().ToString(),
+                                Source = "QSB"
                             }
                         })
                         .ToArray();

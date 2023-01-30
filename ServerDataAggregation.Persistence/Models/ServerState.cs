@@ -31,10 +31,16 @@ namespace ServerDataAggregation.Persistence.Models
         public virtual string? Mod { get; set; }
         [Column("mode")]
         public virtual string? Mode { get; set; }
+        [Column("match_status")]
+        public virtual int MatchStatus { get; set; }
         [Column("ip_address")]
         public virtual string? IpAddress { get; set; }
         [Column("max_players")]
         public virtual int MaxPlayers { get; set; }
+        [Column("timelimit")]
+        public int Timelimit { get; set; }
+        [Column("fraglimit")]
+        public int Fraglimit { get; set; }
         [Column("server_settings")]
         public virtual string? ServerSettings { get; set; }
         [Column("players")]
@@ -106,9 +112,9 @@ namespace ServerDataAggregation.Persistence.Models
         /// </summary>
         public DateTime JoinTime { get; set; }
         /// <summary>
-        /// Join Timestamp of Player
+        /// Type of Player (Bot vs Host vs)
         /// </summary>
-        public int PlayerType { get; set; }
+        public int Type { get; set; }
     }
 
     public class ServerStateConfiguration : IEntityTypeConfiguration<ServerState>

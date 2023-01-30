@@ -23,6 +23,10 @@ namespace ServerDataAggregation.Persistence.Models
         public string? Mod { get; set; }
         [Column("mode")]
         public string? Mode { get; set; }
+        [Column("timelimit")]
+        public int Timelimit { get; set; }
+        [Column("fraglimit")]
+        public int Fraglimit { get; set; }
         [Column("match_start")]
         public DateTime MatchStart { get; set; }
         [Column("match_end")]

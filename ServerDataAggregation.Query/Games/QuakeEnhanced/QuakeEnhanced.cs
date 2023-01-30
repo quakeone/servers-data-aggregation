@@ -6,6 +6,7 @@ using ServersDataAggregation.Common.Enums;
 using System.Net.Sockets;
 using Org.BouncyCastle.Crypto.Tls;
 using ServersDataAggregation.Query.Games.Common;
+using Org.BouncyCastle.Asn1.Tsp;
 
 namespace ServersDataAggregation.Query.Games.QuakeEnhanced;
 
@@ -149,6 +150,7 @@ public class QuakeEnhanced : IServerInfoProvider
         serverSnapshot.IpAddress = pServerAddress; // udp.RemoteIpAddress;
         serverSnapshot.Players = players.ToArray();
         serverSnapshot.ServerSettings = serverRules.ToArray();
+        serverSnapshot = MatchParamsHelper.DeriveParams(serverSnapshot);
 
         return serverSnapshot;
     }

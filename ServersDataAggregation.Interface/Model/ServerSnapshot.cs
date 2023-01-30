@@ -1,4 +1,6 @@
-﻿namespace ServersDataAggregation.Common.Model
+﻿using ServersDataAggregation.Common.Enums;
+
+namespace ServersDataAggregation.Common.Model
 {
     public class ServerSnapshot
     {
@@ -47,5 +49,17 @@
         /// Current Mode server is hosting (Ie: CRx may run CTF or FFA or Match mode)
         /// </summary>
         public string Mode { get; set; }
+        /// <summary>
+        /// Current Status of Match (Pickup, Waiting for Game, Match in Progress)
+        /// </summary>
+        public MatchStatus MatchStatus { get; set; }
+        /// <summary>
+        /// Frag Limit of game/match
+        /// </summary>
+        public int  Timelimit { get; set; }
+        /// <summary>
+        /// Time Limit of game/match
+        /// </summary>
+        public int Fraglimit { get; set; }
     }
 }

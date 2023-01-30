@@ -16,9 +16,19 @@ namespace ServerDataAggregation.Persistence
         // special "local" folder for your platform.
         protected override void OnConfiguring(DbContextOptionsBuilder options)
         {
+            var database = Environment.GetEnvironmentVariable("DB") ?? "servers";
+            var host = Environment.GetEnvironmentVariable("DB_HOST");
+            var user = Environment.GetEnvironmentVariable("DB_USER");
+            var password = Environment.GetEnvironmentVariable("DB_PASS");
+            var port = Environment.GetEnvironmentVariable("DB_PORT") ?? "5555";
+
+            if (host == null || user == null || password == null)
+            {
+                throw new Exception("Database environment variables not set. Please set DB_HOST, DB_USER and DB_PASS");
+            }
             // options.UseSqlite($"Data Source={DbPath}");
             options.UseNpgsql(
-                $"Host=localhost; Database = servers; Port = 5555; User id = docker; Password = docker",
+                $"Host={host};Database = {database}; Port = {port}; User id = {user}; Password = {password}",
                 x => x.MigrationsAssembly("ServerDataAggregation.Persistence")
             );
         }

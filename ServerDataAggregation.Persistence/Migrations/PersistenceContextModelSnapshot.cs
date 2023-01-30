@@ -65,10 +65,6 @@ namespace ServerDataAggregation.Persistence.Migrations
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("player_match_start");
 
-                    b.Property<int>("PlayerType")
-                        .HasColumnType("integer")
-                        .HasColumnName("type");
-
                     b.Property<int>("ShirtColor")
                         .HasColumnType("integer")
                         .HasColumnName("shirt_color");
@@ -76,6 +72,10 @@ namespace ServerDataAggregation.Persistence.Migrations
                     b.Property<string>("Skin")
                         .HasColumnType("text")
                         .HasColumnName("skin");
+
+                    b.Property<int>("Type")
+                        .HasColumnType("integer")
+                        .HasColumnName("type");
 
                     b.Property<int>("server_match_id")
                         .HasColumnType("integer");
@@ -190,6 +190,11 @@ namespace ServerDataAggregation.Persistence.Migrations
                         .HasColumnType("integer")
                         .HasColumnName("query_interval");
 
+                    b.Property<string>("Source")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("source");
+
                     b.HasKey("ServerId");
 
                     b.ToTable("server");
@@ -203,6 +208,10 @@ namespace ServerDataAggregation.Persistence.Migrations
                         .HasColumnName("server_match_id");
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("ServerMatchId"));
+
+                    b.Property<int>("Fraglimit")
+                        .HasColumnType("integer")
+                        .HasColumnName("fraglimit");
 
                     b.Property<string>("Map")
                         .IsRequired()
@@ -224,6 +233,10 @@ namespace ServerDataAggregation.Persistence.Migrations
                     b.Property<string>("Mode")
                         .HasColumnType("text")
                         .HasColumnName("mode");
+
+                    b.Property<int>("Timelimit")
+                        .HasColumnType("integer")
+                        .HasColumnName("timelimit");
 
                     b.Property<int>("server_id")
                         .HasColumnType("integer");
@@ -307,6 +320,10 @@ namespace ServerDataAggregation.Persistence.Migrations
                         .HasColumnType("integer")
                         .HasColumnName("failed_query_attempts");
 
+                    b.Property<int>("Fraglimit")
+                        .HasColumnType("integer")
+                        .HasColumnName("fraglimit");
+
                     b.Property<string>("Hostname")
                         .HasColumnType("text")
                         .HasColumnName("hostname");
@@ -326,6 +343,10 @@ namespace ServerDataAggregation.Persistence.Migrations
                     b.Property<string>("Map")
                         .HasColumnType("text")
                         .HasColumnName("map");
+
+                    b.Property<int>("MatchStatus")
+                        .HasColumnType("integer")
+                        .HasColumnName("match_status");
 
                     b.Property<int>("MaxPlayers")
                         .HasColumnType("integer")
@@ -350,6 +371,10 @@ namespace ServerDataAggregation.Persistence.Migrations
                     b.Property<DateTime?>("TimeStamp")
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("timestamp");
+
+                    b.Property<int>("Timelimit")
+                        .HasColumnType("integer")
+                        .HasColumnName("timelimit");
 
                     b.Property<int>("server_id")
                         .HasColumnType("integer");

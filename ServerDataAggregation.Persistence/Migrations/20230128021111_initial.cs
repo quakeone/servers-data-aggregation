@@ -28,6 +28,7 @@ namespace ServerDataAggregation.Persistence.Migrations
                     active = table.Column<bool>(type: "boolean", nullable: false),
                     apikey = table.Column<string>(name: "api_key", type: "text", nullable: false),
                     parameters = table.Column<string>(type: "text", nullable: true),
+                    source = table.Column<string>(type: "text", nullable: false),
                     metadata = table.Column<string>(type: "text", nullable: true)
                 },
                 constraints: table =>
@@ -67,6 +68,8 @@ namespace ServerDataAggregation.Persistence.Migrations
                     map = table.Column<string>(type: "text", nullable: false),
                     mod = table.Column<string>(type: "text", nullable: true),
                     mode = table.Column<string>(type: "text", nullable: true),
+                    timelimit = table.Column<int>(type: "integer", nullable: false),
+                    fraglimit = table.Column<int>(type: "integer", nullable: false),
                     matchstart = table.Column<DateTime>(name: "match_start", type: "timestamp with time zone", nullable: false),
                     matchend = table.Column<DateTime>(name: "match_end", type: "timestamp with time zone", nullable: true)
                 },
@@ -93,8 +96,11 @@ namespace ServerDataAggregation.Persistence.Migrations
                     map = table.Column<string>(type: "text", nullable: true),
                     mod = table.Column<string>(type: "text", nullable: true),
                     mode = table.Column<string>(type: "text", nullable: true),
+                    matchstatus = table.Column<int>(name: "match_status", type: "integer", nullable: false),
                     ipaddress = table.Column<string>(name: "ip_address", type: "text", nullable: true),
                     maxplayers = table.Column<int>(name: "max_players", type: "integer", nullable: false),
+                    timelimit = table.Column<int>(type: "integer", nullable: false),
+                    fraglimit = table.Column<int>(type: "integer", nullable: false),
                     serversettings = table.Column<string>(name: "server_settings", type: "text", nullable: true),
                     players = table.Column<string>(type: "jsonb", nullable: true),
                     failedqueryattempts = table.Column<int>(name: "failed_query_attempts", type: "integer", nullable: false),

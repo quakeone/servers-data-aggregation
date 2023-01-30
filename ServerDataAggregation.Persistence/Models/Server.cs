@@ -46,6 +46,8 @@ namespace ServerDataAggregation.Persistence.Models
 
         [Column("parameters")]
         public virtual string? Parameters { get; set; }
+        [Column("source")]
+        public virtual string Source { get; set; }
         [Column("metadata")]
         public virtual string? Metadata { get; set; }
 

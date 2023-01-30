@@ -2,6 +2,7 @@
 using ServerDataAggregation.Persistence;
 using ServerDataAggregation.Persistence.Models;
 using ServersDataAggregation.Common;
+using ServersDataAggregation.Service.Services.IpApi;
 using System.Text;
 using System.Text.Json;
 using Db = ServerDataAggregation.Persistence.Models;
@@ -86,11 +87,24 @@ namespace ServersDataAggregation.Service.Tasks.QueryServers
                 prevSnapshot = snapshot;
             }
 
+            if (_serverState.IpAddress != _snapshot.IpAddress)
+            {
+                var ipResult = await new Services.IpApi.Service().GetResult(_snapshot.IpAddress);
+                if (ipResult.status == "success")
+                {
+                    _serverState.ServerDefinition.Country = ipResult.countryCode;
+                    _serverState.ServerDefinition.Locality = ipResult.regionName;
+                }
+            }
             _serverState.TimeStamp = DateTime.UtcNow;
             _serverState.Map = _snapshot.Map;
             _serverState.Mod = _snapshot.Mod;
             _serverState.Mode = _snapshot.Mode;
             _serverState.Hostname = _snapshot.ServerName;
+            _serverState.MaxPlayers = _snapshot.MaxPlayerCount;
+            _serverState.Fraglimit = _snapshot.Fraglimit;
+            _serverState.Timelimit = _snapshot.Timelimit;
+            _serverState.MatchStatus = (int)_snapshot.MatchStatus;
             _serverState.ServerSettings = JsonSerializer.Serialize(_snapshot.ServerSettings);
             _serverState.Players = _snapshot.Players.Select(player =>
             {
@@ -115,7 +129,7 @@ namespace ServersDataAggregation.Service.Tasks.QueryServers
                     Number = player.Number,
                     Ping = player.Ping,
                     JoinTime = joinTime,
-                    PlayerType = (int)player.PlayerType
+                    Type = (int)player.PlayerType
                 };
             }).ToList();
         }

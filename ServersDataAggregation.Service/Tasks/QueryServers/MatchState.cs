@@ -8,6 +8,7 @@ using Microsoft.EntityFrameworkCore;
 using ServersDataAggregation.Common;
 using Microsoft.EntityFrameworkCore.ChangeTracking.Internal;
 using Db = ServerDataAggregation.Persistence.Models;
+using ServersDataAggregation.Common.Enums;
 
 namespace ServersDataAggregation.Service.Tasks.QueryServers
 {
@@ -93,11 +94,21 @@ namespace ServersDataAggregation.Service.Tasks.QueryServers
                 return true;
             }
             var fragRatio = player.TotalFrags / playerUptime;
-            return fragRatio < (3 / 3600); // 3 frags an hour to be labeled as "active" seems reasonable enough.
+            return fragRatio > (2 / 3600); // 2 frags an hour to be labeled as "active" seems reasonable enough.
         }
 
         private bool IsStartMatch()
         {
+            if (_serverState.MatchStatus == (int)MatchStatus.WaitingForTeam)
+            {
+                return false;
+            } 
+            else if (_serverState.MatchStatus == (int)MatchStatus.MatchInProgress)
+            {
+                ServerDebug($"Match Start Detected - Match in Progress detected");
+                return true;
+            }
+
             var activePlayers = _serverState.Players
                 .Where(IsActivePlayer)
                 .ToArray();
@@ -111,18 +122,28 @@ namespace ServersDataAggregation.Service.Tasks.QueryServers
             }
             return false;
         }
-
+         
         private bool IsEndMatch(ServerMatch currentMatch, IEnumerable<MatchPlayerState> playerMatches)
         {
+            if (_serverState.MatchStatus == (int)MatchStatus.WaitingForTeam)
+            {
+                ServerDebug($"Ending Match - Waiting for Teams detected");
+                return true;
+            } 
+            else if(_serverState.MatchStatus == (int)MatchStatus.MatchInProgress)
+            {
+                return false;
+            }
+
             var activePlayers = _serverState.Players
                 .Where(IsActivePlayer)
                 .ToArray();
 
             var fragResetCount = playerMatches.Count(p => p.IsFragReset);
 
-            if (fragResetCount > 1)
+            if (fragResetCount > 2)
             {
-                ServerDebug($"Ending Match - Frag Reset count is more than 1:  {fragResetCount}");
+                ServerDebug($"Ending Match - Frag Reset count is more than 2:  {fragResetCount}");
                 return true;
             }
             if (activePlayers.Length < 2)
@@ -174,7 +195,7 @@ namespace ServersDataAggregation.Service.Tasks.QueryServers
             ShirtColor = player.ShirtColor,
             Skin = player.Skin,
             Model = player.Model,
-            PlayerType = player.PlayerType,
+            Type = player.Type,
             Name = player.Name,
             NameRaw = player.NameRaw,
             Number = player.Number,
@@ -188,6 +209,8 @@ namespace ServersDataAggregation.Service.Tasks.QueryServers
             Map = serverState.Map,
             Mod = serverState.Mod,
             Mode = serverState.Mode,
+            Fraglimit = serverState.Fraglimit,
+            Timelimit = serverState.Timelimit,
             PlayerMatches = playerState.Select(CreateNewPlayerMatch).ToList()
         };
 

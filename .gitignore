@@ -35,3 +35,6 @@ msbuild.wrn
 
 # Visual Studio 2015
 .vs/
+
+launchSettings.json
+ServersDataAggregation.App\Properties\launchSettings.json

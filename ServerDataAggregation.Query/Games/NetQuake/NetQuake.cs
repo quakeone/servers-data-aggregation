@@ -80,6 +80,7 @@ public class NetQuake : IServerInfoProvider
             serverSnapshot.Mode = modMode.Mode;
             serverSnapshot.Mod = modMode.Mod;
         }
+        serverSnapshot = MatchParamsHelper.DeriveParams(serverSnapshot);
 
         return serverSnapshot;
     }

@@ -5,6 +5,7 @@
 namespace ServerDataAggregation.Persistence.Migrations
 {
 
+
     /// <inheritdoc />
     public partial class supplemental : Migration
     {

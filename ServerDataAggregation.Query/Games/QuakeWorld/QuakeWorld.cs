@@ -88,6 +88,7 @@ public class QuakeWorld : IServerInfoProvider
             serverSettings.Add(new ServerSetting(entry.Key.ToString(), entry.Value.ToString()));
         }
         sInfo.ServerSettings = serverSettings.ToArray();
+        sInfo = MatchParamsHelper.DeriveParams(sInfo);
 
         return sInfo;
     }

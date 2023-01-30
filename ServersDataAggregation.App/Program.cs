@@ -8,6 +8,7 @@ public class Program
 {
     public static void Main(string[] args)
     {
+        DotEnv.Load(Path.Combine(Directory.GetCurrentDirectory(), ".env"));
         Logging.Initialize();
         CreateHostBuilder(args).Build().Run();
     }

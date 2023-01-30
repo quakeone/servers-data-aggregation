@@ -33,7 +33,7 @@ namespace ServerDataAggregation.Persistence.Models
         [Column("frags")]
         public virtual int Frags { get; set; }
         [Column("type")]
-        public virtual int PlayerType { get; set; }
+        public virtual int Type { get; set; }
         [Column("player_match_start")]
         public virtual DateTime? PlayerMatchStart { get; set; }
         [Column("player_match_end")]
