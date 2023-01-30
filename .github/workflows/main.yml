@@ -57,12 +57,12 @@ jobs:
         ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
       run: |
         docker run -d \
-          -e DB_USER=docker \
-          -e DB_HOST=postgres \
-          -e DB=servers \
-          -e DB_PASS={{ secrets.DB_PASS }} \
-          -e QE_PSK={{ secrets.QE_PSK }} \
+          -e "DB_USER=docker" \
+          -e "DB_HOST=postgres" \
+          -e "DB=servers" \
+          -e "DB_PASS={{ secrets.DB_PASS }}" \
+          -e "QE_PSK={{ secrets.QE_PSK }}" \
           --network=data-aggregation \
           --restart=always \
           --name data-aggregation \
-          $ECR_REPOSITORY:$IMAGE_TAG
+          $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
