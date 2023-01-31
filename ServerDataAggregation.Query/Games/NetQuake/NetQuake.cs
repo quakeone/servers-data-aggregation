@@ -66,7 +66,7 @@ public class NetQuake : IServerInfoProvider
 
             if (playerInfoReply.PlayerName.SequenceEqual(NetQuake.UNCONNECTED_NAME))
                 continue;
-
+            playerInfoReply.PlayerName = NameHelper.ChkRemoveAfk(playerInfoReply.PlayerName);
             players.Add(CreatePlayerSnapshot(playerInfoReply));
         }
         

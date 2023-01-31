@@ -31,7 +31,7 @@ namespace ServersDataAggregation.Service.Tasks.QueryServers
 
         const int MATCH_LENGTH_ALLOWANCE_SECONDS = 60; // 1 min
         const int PLAYER_IDLE_ALLOWANCE_SECONDS = 1800; // 30 mins
-
+        private static readonly byte[] AFK = new byte[]{(byte)' ', (byte)'A', (byte)'F', (byte)'K' };
         private ServerState _serverState;
 
         public MatchState(ServerState serverState)
@@ -53,8 +53,6 @@ namespace ServersDataAggregation.Service.Tasks.QueryServers
                 .MaxBy(g => g.Count())
                 .FirstOrDefault();
         }
-
-
 
         /// <summary>
         ///  Dictionary of Player.Number PlayerState/PlayerMatch for comparison

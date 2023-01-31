@@ -62,18 +62,21 @@ public class QuakeWorld : IServerInfoProvider
 
         try
         {
-            sInfo.Players = pStatus.CurrentPlayers.Select(playerInfo => new PlayerSnapshot()
-            {
-                FeatureFlags = PlayerSnapshotFeatureFlags.Clothes,
-                SkinName = playerInfo.SkinName.Replace("\"", ""),
-                ShirtColor = int.Parse(playerInfo.ShirtColor),
-                PantColor = int.Parse(playerInfo.PantColor),
-                Number = (int)playerInfo.PlayerNumber,
-                Name = NameUtils.PlayerBytesToString(playerInfo.PlayerBytes),
-                NameRaw = playerInfo.PlayerBytes,
-                PlayTime = playerInfo.PlayMins == null ? new TimeSpan(0) : TimeSpan.FromMinutes(int.Parse(playerInfo.PlayMins)),
-                Ping = int.Parse(playerInfo.Ping),
-                Frags = int.Parse(playerInfo.Frags)
+            sInfo.Players = pStatus.CurrentPlayers.Select(playerInfo => {
+                var playerName = NameHelper.ChkRemoveAfk(playerInfo.PlayerBytes);
+                return new PlayerSnapshot()
+                {
+                    FeatureFlags = PlayerSnapshotFeatureFlags.Clothes,
+                    SkinName = playerInfo.SkinName.Replace("\"", ""),
+                    ShirtColor = int.Parse(playerInfo.ShirtColor),
+                    PantColor = int.Parse(playerInfo.PantColor),
+                    Number = (int)playerInfo.PlayerNumber,
+                    Name = NameUtils.PlayerBytesToString(playerName),
+                    NameRaw = playerName,
+                    PlayTime = playerInfo.PlayMins == null ? new TimeSpan(0) : TimeSpan.FromMinutes(int.Parse(playerInfo.PlayMins)),
+                    Ping = int.Parse(playerInfo.Ping),
+                    Frags = int.Parse(playerInfo.Frags)
+                };
             })
             .ToArray();
         }
@@ -88,6 +91,12 @@ public class QuakeWorld : IServerInfoProvider
             serverSettings.Add(new ServerSetting(entry.Key.ToString(), entry.Value.ToString()));
         }
         sInfo.ServerSettings = serverSettings.ToArray();
+        var modMode = ModModeHelper.DeriveModMode(sInfo.ServerSettings);
+        if (modMode != null)
+        {
+            sInfo.Mode = modMode.Mode;
+            sInfo.Mod = modMode.Mod;
+        }
         sInfo = MatchParamsHelper.DeriveParams(sInfo);
 
         return sInfo;

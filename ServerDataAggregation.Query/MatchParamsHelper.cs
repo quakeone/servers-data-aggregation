@@ -23,16 +23,22 @@ namespace ServersDataAggregation.Query
 
                 if (ModModeHelper.SupportsTimedMatch(snapshot.Mode))
                 {
-
-                    if (split.Length > 1)
+                    if (split[0].StartsWith("final score"))
                     {
-                        snapshot.MatchStatus = split[1].ToLower() == "waiting for teams"
-                            ? Common.Enums.MatchStatus.WaitingForTeam
-                            : Common.Enums.MatchStatus.MatchInProgress;
+                        snapshot.MatchStatus = Common.Enums.MatchStatus.WaitingForTeam;
                     } 
                     else
                     {
-                        snapshot.MatchStatus = Common.Enums.MatchStatus.MatchInProgress;
+                        if (split.Length > 1)
+                        {
+                            snapshot.MatchStatus = split[1].ToLower() == "waiting for teams"
+                                ? Common.Enums.MatchStatus.WaitingForTeam
+                                : Common.Enums.MatchStatus.MatchInProgress;
+                        }
+                        else
+                        {
+                            snapshot.MatchStatus = Common.Enums.MatchStatus.MatchInProgress;
+                        }
                     }
                 }
             }
