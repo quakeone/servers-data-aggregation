@@ -302,7 +302,7 @@ namespace ServersDataAggregation.Service.Tasks.QueryServers
                             if (playerHistory.Count() > 0)
                             { 
                                 playerMatch.ShirtColor = SnapshotPlayerValue(s => s.ShirtColor, playerHistory);
-                                playerMatch.PantColor = SnapshotPlayerValue(s => s.ShirtColor, playerHistory);
+                                playerMatch.PantColor = SnapshotPlayerValue(s => s.PantColor, playerHistory);
                                 playerMatch.Skin = SnapshotPlayerValue(s => s.Skin, playerHistory);
                                 playerMatch.Model = SnapshotPlayerValue(s => s.Model, playerHistory);
                             }
