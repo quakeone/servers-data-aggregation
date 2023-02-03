@@ -170,7 +170,7 @@ namespace ServersDataAggregation.Service.Tasks.QueryServers
         private bool IsDiscardable(ServerMatch currentMatch)
         {
             var length = DateTime.UtcNow - currentMatch.MatchStart;
-            var totalFrags = currentMatch.PlayerMatches.Aggregate(0, (count, pm) => pm.Frags == -99 ? 0 : count + pm.Frags);
+            var totalFrags = currentMatch.PlayerMatches.Aggregate(0, (count, pm) => pm.Frags == -99 ? count : count + pm.Frags);
 
             if (length.TotalSeconds < MATCH_LENGTH_ALLOWANCE_SECONDS)
             {
@@ -272,8 +272,10 @@ namespace ServersDataAggregation.Service.Tasks.QueryServers
 
                     if (match.PlayerMatches.Count > 0) {
                         await context.PlayerMatchProgresses.AddRangeAsync(
-                            match.PlayerMatches.Select(playerMatch => 
-                                CreatePlayerMatchPorgress(match, playerMatch)));
+                            match.PlayerMatches
+                                .Where(playerMatch => playerMatch.PlayerMatchEnd == null)
+                                .Select(playerMatch => 
+                                    CreatePlayerMatchPorgress(match, playerMatch)));
                     }
                 } 
                 else
@@ -306,6 +308,10 @@ namespace ServersDataAggregation.Service.Tasks.QueryServers
                                 playerMatch.Skin = SnapshotPlayerValue(s => s.Skin, playerHistory);
                                 playerMatch.Model = SnapshotPlayerValue(s => s.Model, playerHistory);
                             }
+                        }
+                        // loop over *all* to end their game.
+                        foreach(var playerMatch in match.PlayerMatches)
+                        {
                             if (playerMatch.PlayerMatchEnd == null)
                             {
                                 playerMatch.PlayerMatchEnd = DateTime.UtcNow;
