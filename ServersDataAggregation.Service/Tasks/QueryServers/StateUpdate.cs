@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.Logging;
+﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using ServerDataAggregation.Persistence;
 using ServerDataAggregation.Persistence.Models;
 using ServersDataAggregation.Common;
@@ -68,17 +69,20 @@ namespace ServersDataAggregation.Service.Tasks.QueryServers
             return currentPlayerState.TotalFrags;
         }
 
-        public async Task UpdateServerState(PersistenceContext context)
+        private async Task<ServerSnapshot?> GetPreviousSnapshot(PersistenceContext context)
         {
             var timeAllowance = DateTime.UtcNow.Subtract(new TimeSpan(0, 5, 0));
-            var prevSnapshot = context.ServerSnapshots
+            return await context.ServerSnapshots
                                 .Where(s =>
                                     s.ServerId == _serverState.ServerDefinition.ServerId
                                     && s.TimeStamp > timeAllowance
                                 )
                                 .OrderByDescending(t => t.TimeStamp)
-                                .FirstOrDefault();
+                                .FirstOrDefaultAsync();
+        }
 
+        public async Task UpdateServerState(Db.ServerSnapshot? prevSnapshot, PersistenceContext context)
+        {
             var snapshot = CreateServerSnapshot(_snapshot);
             context.ServerSnapshots.Add(snapshot);
 
@@ -145,9 +149,12 @@ namespace ServersDataAggregation.Service.Tasks.QueryServers
                 _serverState.LastQueryResult = (int)ServerStatus.Running;
                 _serverState.FailedQueryAttempts = 0;
 
-                await UpdateServerState(context);
+                var prevSnapshot = await GetPreviousSnapshot(context);
 
-                await new MatchState(_serverState).ProcessMatch(context);
+                await UpdateServerState(prevSnapshot, context);
+
+                await new MatchState(_serverState, prevSnapshot)
+                    .ProcessMatch(context);
 
                 await context.SaveChangesAsync();
             }

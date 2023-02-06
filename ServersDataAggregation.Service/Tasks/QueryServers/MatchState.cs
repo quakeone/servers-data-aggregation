@@ -29,14 +29,17 @@ namespace ServersDataAggregation.Service.Tasks.QueryServers
         // Match.currentMap != snapshot.currentMap
         // Active(Snapshot.players) < 2
 
-        const int MATCH_LENGTH_ALLOWANCE_SECONDS = 60; // 1 min
+        const int MATCH_LENGTH_ALLOWANCE_SECONDS = 120; // 2 min
         const int PLAYER_IDLE_ALLOWANCE_SECONDS = 1800; // 30 mins
         private static readonly byte[] AFK = new byte[]{(byte)' ', (byte)'A', (byte)'F', (byte)'K' };
-        private ServerState _serverState;
 
-        public MatchState(ServerState serverState)
+        private ServerState _serverState;
+        private ServerSnapshot? _prevSnapshot;
+
+        public MatchState(ServerState serverState, ServerSnapshot? prevSnapshot)
         {
             _serverState = serverState;
+            _prevSnapshot = prevSnapshot;
         }
 
         private void ServerDebug(string message)
@@ -74,6 +77,19 @@ namespace ServersDataAggregation.Service.Tasks.QueryServers
                 if (stateCheck != null)
                 {
                     statesWip.Remove(stateCheck);
+                }
+            }
+            foreach(var statePlayer in statesWip.Where(p => p.Name != "player"))
+            {
+                // maybe returning.
+                // Have some issues with server briefly reporting players as "not present"
+                var returningPlayer = playerMatches.FirstOrDefault(pm => pm.NameRaw == statePlayer.NameRaw);
+                if (returningPlayer != null)
+                {
+                    Debug.Assert(returningPlayer.PlayerMatchEnd != null, $"Returning player '{returningPlayer.Name}' match end is not null, maybe a duplicate");
+                    returningPlayer.PlayerMatchEnd = null;
+                    list.Add(new MatchPlayerState { match = returningPlayer, state = statePlayer });
+                    statesWip.Remove(statePlayer);
                 }
             }
             list.AddRange(statesWip.Select(playerState => new MatchPlayerState { state = playerState }));
@@ -178,9 +194,9 @@ namespace ServersDataAggregation.Service.Tasks.QueryServers
                 return true;
             }
 
-            if (totalFrags < 1)
+            if (totalFrags < 3)
             {
-                ServerDebug($"Discarding Match - Total Frags was {totalFrags} (threshold is {1})");
+                ServerDebug($"Discarding Match - Total Frags was {totalFrags} (threshold is 3)");
                 return true;
             }
             return false;
@@ -273,7 +289,10 @@ namespace ServersDataAggregation.Service.Tasks.QueryServers
                     if (match.PlayerMatches.Count > 0) {
                         await context.PlayerMatchProgresses.AddRangeAsync(
                             match.PlayerMatches
-                                .Where(playerMatch => playerMatch.PlayerMatchEnd == null)
+                                .Where(playerMatch => 
+                                    playerMatch.PlayerMatchEnd == null 
+                                    && playerMatch.Frags > -2
+                                )
                                 .Select(playerMatch => 
                                     CreatePlayerMatchPorgress(match, playerMatch)));
                     }
@@ -287,10 +306,11 @@ namespace ServersDataAggregation.Service.Tasks.QueryServers
                     } 
                     else
                     {
+                        var endTime = _prevSnapshot != null ? _prevSnapshot.TimeStamp : DateTime.UtcNow;
                         var matchHistory = await context.ServerSnapshots
                             .Where(ss => ss.TimeStamp > match.MatchStart && ss.ServerId == match.Server.ServerId)
                             .ToListAsync();
-                        
+                       
                         var playerMatches = match.PlayerMatches
                             .GroupBy(pm => pm.NameRaw)
                             .Where(g => g.Count() == 1)
@@ -314,10 +334,10 @@ namespace ServersDataAggregation.Service.Tasks.QueryServers
                         {
                             if (playerMatch.PlayerMatchEnd == null)
                             {
-                                playerMatch.PlayerMatchEnd = DateTime.UtcNow;
+                                playerMatch.PlayerMatchEnd = endTime;
                             }
                         }
-                        match.MatchEnd = DateTime.UtcNow;
+                        match.MatchEnd = endTime;
                     }
 
                     match = null;
