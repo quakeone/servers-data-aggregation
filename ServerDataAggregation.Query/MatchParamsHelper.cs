@@ -31,9 +31,18 @@ namespace ServersDataAggregation.Query
                     {
                         if (split.Length > 1)
                         {
-                            snapshot.MatchStatus = split[1].ToLower() == "waiting for teams"
-                                ? Common.Enums.MatchStatus.WaitingForTeam
-                                : Common.Enums.MatchStatus.MatchInProgress;
+                            var secondHalf = split[1].ToLower();
+                            if (secondHalf.Contains("waiting for teams")) {
+                                snapshot.MatchStatus = Common.Enums.MatchStatus.WaitingForTeam;
+                            } 
+                            else if (secondHalf.Contains("match starting"))
+                            {
+                                snapshot.MatchStatus = Common.Enums.MatchStatus.MatchStarting;
+                            }
+                            else
+                            {
+                                snapshot.MatchStatus = Common.Enums.MatchStatus.MatchInProgress;
+                            }
                         }
                         else
                         {

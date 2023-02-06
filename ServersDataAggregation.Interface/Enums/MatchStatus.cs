@@ -10,6 +10,7 @@ namespace ServersDataAggregation.Common.Enums
     {
         Pickup,
         WaitingForTeam,
+        MatchStarting,
         MatchInProgress
     }
 }

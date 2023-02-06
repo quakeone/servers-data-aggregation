@@ -96,7 +96,11 @@ public class QueryServers
     {
         var serversToQuery = await FindQueryableServers();
 
-        await Task.WhenAll(serversToQuery.AsParallel().Select(serverState => Task.Run(() => new QueryServer(serverState).DoQuery())));
+        var queryTasks = serversToQuery
+            .AsParallel()
+            .Select(serverState => new QueryServer(serverState).DoQuery());
+
+        await Task.WhenAll(queryTasks);
     }
 
     ///// <summary>
