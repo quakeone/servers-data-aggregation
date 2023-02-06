@@ -13,7 +13,6 @@ namespace ServersDataAggregation.Query.Games.QuakeEnhanced;
 public class QuakeEnhanced : IServerInfoProvider
 {
     private byte[] _pskId = Encoding.UTF8.GetBytes("id-quake-ex-dtls");
-    private ServerParameters _serverParams;
 
     private byte getHexValue(char hex)
     {
@@ -21,38 +20,31 @@ public class QuakeEnhanced : IServerInfoProvider
         return (byte)(val - (val < 58 ? 48 : (val < 97 ? 55 : 87)));
     }
 
-    private INetCommunicate GetNetUtility(string pServerAddress, int pServerPort, ServerParameters serverParams)
+    private INetCommunicate GetNetUtility(string pServerAddress, int pServerPort)
     {
-        if (!string.IsNullOrEmpty(serverParams.Engine) && serverParams.Engine.ToLower() == "fte")
+        var psk = Environment.GetEnvironmentVariable("QE_PSK");
+        if (string.IsNullOrEmpty(psk))
         {
-            return new UdpUtility(pServerAddress, pServerPort);
-        } 
-        else
-        {
-            var psk = Environment.GetEnvironmentVariable("QE_PSK");
-            if (string.IsNullOrEmpty(psk))
-            {
-                throw new ArgumentException("Quake Enhanced needs a PSK for traffic encryption");
-            }
-
-            try {
-                return new DtlsUtility(StringToBytes(psk), _pskId, pServerAddress, pServerPort);
-            }
-            catch (TlsFatalAlert ex)
-            {
-                throw;
-            }
-            catch (Exception ex)
-            {
-                // rethrowing here because apparently the type isn't coming through the lib code
-                if (ex.Message == "internal_error(80)")
-                {
-                    throw new TlsFatalAlert(AlertDescription.internal_error);
-                }
-                
-                throw;
-            }
+            throw new ArgumentException("Quake Enhanced needs a PSK for traffic encryption");
         }
+
+        try {
+            return new DtlsUtility(StringToBytes(psk), _pskId, pServerAddress, pServerPort);
+        }
+        catch (TlsFatalAlert ex)
+        {
+            throw;
+        }
+        catch (Exception ex)
+        {
+            // rethrowing here because apparently the type isn't coming through the lib code
+            if (ex.Message == "internal_error(80)")
+            {
+                throw new TlsFatalAlert(AlertDescription.internal_error);
+            }
+                
+            throw;
+        }    
     }
 
     // I'm sure there's a one liner for this...
@@ -70,14 +62,13 @@ public class QuakeEnhanced : IServerInfoProvider
         return bytes;
     }
 
-    public QuakeEnhanced(ServerParameters parameters)
+    public QuakeEnhanced()
     {
-        _serverParams = parameters;
     }
 
     public ServerSnapshot GetServerInfo(string pServerAddress, int pServerPort)
     {
-        var net = GetNetUtility(pServerAddress, pServerPort, _serverParams);
+        var net = GetNetUtility(pServerAddress, pServerPort);
 
         byte[] bytesReceived = net.SendBytes(new ServerInfoRequest().GetPacket());
         if (bytesReceived == null)

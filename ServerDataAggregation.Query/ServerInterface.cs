@@ -32,36 +32,36 @@ public class ServerInterface
     {
         var parameters = GetParameters(pParameters);
 
-        IServerInfoProvider infoProvider = null;
+        IServerInfoProvider? infoProvider = null;
 
-        switch (pGame)
+        if (parameters.Engine == "fte")
         {
-            case Game.NetQuake:
-                infoProvider = new Games.NetQuake.NetQuake();
-                break;
-            case Game.QuakeWorld:
-                infoProvider = new Games.QuakeWorld.QuakeWorld(parameters);
-                break;
-            case Game.Quake2:
-                infoProvider = new Games.Quake2.Quake2();
-                break;
-            case Game.Quake3:
-                infoProvider = new Games.Quake3.Quake3();
-                break;
-            case Game.QuakeEnhanced:
-                if (parameters.Engine == "fte")
-                {
+            infoProvider = new Games.QuakeWorld.QuakeWorld(parameters);
+        } 
+        else
+        {
+            switch (pGame)
+            {
+                case Game.NetQuake:
+                    infoProvider = new Games.NetQuake.NetQuake();
+                    break;
+                case Game.QuakeWorld:
                     infoProvider = new Games.QuakeWorld.QuakeWorld(parameters);
-                }
-                else
-                {
-                    infoProvider = new Games.QuakeEnhanced.QuakeEnhanced(parameters);
-                }
-                break;
-            default:
-                throw new NotSupportedException("Game is not supported at this time");
+                    break;
+                case Game.Quake2:
+                    infoProvider = new Games.Quake2.Quake2();
+                    break;
+                case Game.Quake3:
+                    infoProvider = new Games.Quake3.Quake3();
+                    break;
+                case Game.QuakeEnhanced:
+                    infoProvider = new Games.QuakeEnhanced.QuakeEnhanced();
+                    break;
 
+            }
         }
+        if (infoProvider == null)
+            throw new NotSupportedException("Game is not supported at this time");
 
         try
         {

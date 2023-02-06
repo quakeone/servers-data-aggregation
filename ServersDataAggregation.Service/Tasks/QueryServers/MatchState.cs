@@ -79,7 +79,9 @@ namespace ServersDataAggregation.Service.Tasks.QueryServers
                     statesWip.Remove(stateCheck);
                 }
             }
-            foreach(var statePlayer in statesWip.Where(p => p.Name != "player"))
+            foreach(var statePlayer in statesWip
+                .Where(p => p.Name != "player")
+                .ToArray())
             {
                 // maybe returning.
                 // Have some issues with server briefly reporting players as "not present"
