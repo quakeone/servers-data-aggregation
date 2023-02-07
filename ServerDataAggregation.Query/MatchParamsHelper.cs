@@ -58,6 +58,22 @@ namespace ServersDataAggregation.Query
                 var split = value.Split(new char[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
                 snapshot.Fraglimit = int.TryParse(split[0], out number) ? number : 0;
             }
+            testRule = settings.FirstOrDefault(setting => setting.Setting.ToLower() == "status");
+            if (testRule != null)
+            {
+                if (ModModeHelper.SupportsTimedMatch(snapshot.Mode))
+                {
+                    
+                    if (testRule.Value.Contains("min left"))
+                    {
+                        snapshot.MatchStatus = Common.Enums.MatchStatus.MatchInProgress;
+                    } 
+                    else
+                    {
+                        snapshot.MatchStatus = Common.Enums.MatchStatus.WaitingForTeam;
+                    }
+                }
+            }
 
             return snapshot;
         }
