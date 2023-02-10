@@ -1,4 +1,5 @@
 ﻿using ServersDataAggregation.Common.Model;
+using ServersDataAggregation.Query.Games.Common;
 using ServersDataAggregation.Query.Games.Quake3.Packets;
 using System.Collections;
 using System.Net.Sockets;
@@ -7,11 +8,13 @@ namespace ServersDataAggregation.Query.Games.Quake3;
 
 internal class Quake3 : IServerInfoProvider
 {
-    private const string Q3_SETTING_HOSTNAME = "sv_hostname";
+    private const string Q3_SETTING_SV_HOSTNAME = "sv_hostname";
+    private const string Q3_SETTING_HOSTNAME = "hostname";
     private const string Q3_SETTING_MAP = "mapname";
     private const string Q3_SETTING_VERSION = "version";
     private const string Q3_SETTING_MAXPLAYERS = "sv_maxclients";
-    private const string Q3_SETTING_MOD = "gamename";
+    private const string Q3_SETTING_GAMENAME = "gamename";
+    private const string Q3_SETTING_MOD = "modname";
 
     #region IServerInfoProvider Members
 
@@ -41,8 +44,13 @@ internal class Quake3 : IServerInfoProvider
         try
         {
             if (pStatus.ServerSettings.Contains(Q3_SETTING_HOSTNAME)) sInfo.ServerName = pStatus.ServerSettings[Q3_SETTING_HOSTNAME].ToString();
+            if (pStatus.ServerSettings.Contains(Q3_SETTING_SV_HOSTNAME)) sInfo.ServerName = pStatus.ServerSettings[Q3_SETTING_SV_HOSTNAME].ToString();
             if (pStatus.ServerSettings.Contains(Q3_SETTING_MAXPLAYERS)) sInfo.MaxPlayerCount = int.Parse(pStatus.ServerSettings[Q3_SETTING_MAXPLAYERS].ToString());
             if (pStatus.ServerSettings.Contains(Q3_SETTING_MAP)) sInfo.Map = pStatus.ServerSettings[Q3_SETTING_MAP].ToString();
+            if (pStatus.ServerSettings.Contains(Q3_SETTING_MOD)) 
+                sInfo.Mod = pStatus.ServerSettings[Q3_SETTING_MOD].ToString();
+            else if(pStatus.ServerSettings.Contains(Q3_SETTING_GAMENAME))
+                sInfo.Mod = pStatus.ServerSettings[Q3_SETTING_GAMENAME].ToString();
             if (pStatus.ServerSettings.Contains(Q3_SETTING_MOD)) sInfo.Mod = pStatus.ServerSettings[Q3_SETTING_MOD].ToString();
             if (pStatus.ServerSettings.Contains(Q3_SETTING_VERSION)) sInfo.ServerVersion = pStatus.ServerSettings[Q3_SETTING_VERSION].ToString();
 
@@ -57,9 +65,11 @@ internal class Quake3 : IServerInfoProvider
 
             sInfo.Players = pStatus.CurrentPlayers.Select(playerInfo => new PlayerSnapshot()
             {
-                Name = playerInfo.PlayerName.Replace("\"", ""),
+                NameRaw = playerInfo.PlayerNameBytes,
+                Name = NameUtils.PlayerBytesToString(playerInfo.PlayerNameBytes),
                 Ping = int.Parse(playerInfo.Ping),
-                Frags = int.Parse(playerInfo.Frags)
+                Frags = int.Parse(playerInfo.Frags),
+                
             })
                 .ToArray();
         }

@@ -111,16 +111,15 @@ public class QuakeEnhanced : IServerInfoProvider
 
         int playerCount = serverInfoReply.CurrentPlayers;
 
-        for (int i = 0, j = 0; i < playerCount; i++, j++)
+        for (int i = 0; i < 32; i++)
         {
             try
             { 
-                bytesReceived = net.SendBytes(new PlayerInfoRequest(j).GetPacket()); 
+                bytesReceived = net.SendBytes(new PlayerInfoRequest(i).GetPacket()); 
             }
-            catch
+            catch(Exception ex)
             {
-                Console.WriteLine("My player hack isn't working ..");
-                continue;
+                break;
             }
 
             PlayerInfoReply? playerInfoReply = GetReplyPacket(bytesReceived) as PlayerInfoReply;
@@ -130,7 +129,7 @@ public class QuakeEnhanced : IServerInfoProvider
             if (playerInfoReply.PlayerName == null || playerInfoReply.PlayerName.Length == 0)
                 break;
 
-            if (playerInfoReply.Address == "") i--; // this is a hack to account for the playerCount issue when bots are on the server.
+            //if (playerInfoReply.Address == "") i--; // this is a hack to account for the playerCount issue when bots are on the server.
             if (playerInfoReply.PlayerName == null || playerInfoReply.PlayerName.Length == 0)
                 break;
 

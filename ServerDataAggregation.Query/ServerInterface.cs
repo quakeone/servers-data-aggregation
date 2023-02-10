@@ -34,11 +34,16 @@ public class ServerInterface
 
         IServerInfoProvider? infoProvider = null;
 
-        if (parameters.Engine == "fte")
+        switch(parameters.Engine)
         {
-            infoProvider = new Games.QuakeWorld.QuakeWorld(parameters);
-        } 
-        else
+            case "fte":
+                infoProvider = new Games.QuakeWorld.QuakeWorld(parameters);
+                break;
+            case "dp":
+                infoProvider = new Games.Quake3.Quake3();
+                break;
+        }
+        if (infoProvider == null)
         {
             switch (pGame)
             {
@@ -60,6 +65,7 @@ public class ServerInterface
 
             }
         }
+        
         if (infoProvider == null)
             throw new NotSupportedException("Game is not supported at this time");
 

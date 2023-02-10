@@ -17,8 +17,8 @@ public class UdpTransport : DatagramTransport
     public UdpTransport(string address, int port)
     {
         _client = new UdpClient(address, port);
-        _client.Client.ReceiveTimeout = 2000;
-        _client.Client.SendTimeout = 2000;
+        _client.Client.ReceiveTimeout = 1000;
+        _client.Client.SendTimeout = 1000;
     }
     public void Close()
     {
