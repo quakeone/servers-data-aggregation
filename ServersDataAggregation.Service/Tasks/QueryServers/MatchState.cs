@@ -223,7 +223,7 @@ namespace ServersDataAggregation.Service.Tasks.QueryServers
             Server = serverState.ServerDefinition,
             MatchStart = DateTime.UtcNow,
             Map = serverState.Map,
-            Mod = serverState.Mod,
+            Mod = serverState.Mod ?? serverState.ServerDefinition.Mod,
             Mode = serverState.Mode,
             Fraglimit = serverState.Fraglimit,
             Timelimit = serverState.Timelimit,
