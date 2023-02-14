@@ -12,16 +12,19 @@ public class SynchronizeServers
 {
     private string? GetIP(string address)
     {
-        IPAddress[] ips;
-
-        ips = Dns.GetHostAddresses(address);
+        IPAddress[] ips =new IPAddress[0];
+        try
+        {
+            ips = Dns.GetHostAddresses(address);
+        }
+        catch { }
         var ip = ips.FirstOrDefault(ip =>
         {
             var ipArr = ip.GetAddressBytes();
             return ipArr[0] != 172 && ipArr[0] != 192 && ipArr[0] != 10;
         });
 
-        if (ip == null)
+        if (ip == null && ips.Count() > 0)
         {
             ip = ips[0];
         }
@@ -30,12 +33,36 @@ public class SynchronizeServers
 
     private bool ServerMatch (Server A, Server B) => B.Address == A.Address && B.Port == A.Port;
 
-    private Server[] Synchronize(ServerState[] currentServers, Server[] maybeAdditional)
+    private Server[] Synchronize(ServerState[] currentServers, Server[] fromSource)
     {
+        if (fromSource.Length == 0)
+        {
+            return new Server[0];
+        }
+
+        var sourceName = fromSource[0].Source;
+
         // Find servers from this source that haven't been added yet
-        var uniquelyAddedFromSource = maybeAdditional.Where(maybeAdd =>
+        var uniquelyAddedFromSource = fromSource.Where(maybeAdd =>
             !currentServers.Any(existing =>
                 existing.ServerDefinition.Source == maybeAdd.Source && ServerMatch(existing.ServerDefinition, maybeAdd)));
+
+        var toEnable = currentServers.Where(existing => !existing.ServerDefinition.Active &&
+            fromSource.Any(sourceServer => ServerMatch(existing.ServerDefinition, sourceServer))
+        );
+
+        var toDisable = currentServers.Where(
+            existing => existing.ServerDefinition.Active && existing.ServerDefinition.Source == sourceName
+                && !fromSource.Any(fromSource => ServerMatch(existing.ServerDefinition, fromSource)));
+
+        foreach(var server in toDisable)
+        {
+            server.ServerDefinition.Active = false;
+        }
+        foreach (var server in toEnable)
+        {
+            server.ServerDefinition.Active = true;
+        }
 
         // Filter if it's been added by another source (match on resolved IP)
         // We don't want to add a server that already exists with the same IP.

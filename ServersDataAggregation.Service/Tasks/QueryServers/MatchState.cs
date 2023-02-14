@@ -172,7 +172,7 @@ namespace ServersDataAggregation.Service.Tasks.QueryServers
                 ServerDebug($"Ending Match - Map {currentMatch.Map} changed to {_serverState.Map}");
                 return true;
             }
-            if (currentMatch.Mod != _serverState.Mod)
+            if (currentMatch.Mod != (_serverState.Mod ?? _serverState.ServerDefinition.Mod))
             {
                 ServerDebug($"Ending Match - Mod {currentMatch.Mod} changed to {_serverState.Mod}");
                 return true;
