@@ -109,11 +109,11 @@ public class SynchronizeServers
             newServers.AddRange(SynchronizeDPMaster(currentServers));
             var distinctNewServers = newServers.DistinctBy(s => $"{s.Address}:{s.Port}");
 
-            if (newServers.Count > 0)
+            if (distinctNewServers.Count > 0)
             {
                 context.Servers.AddRange(distinctNewServers);
-                await context.SaveChangesAsync();
             }
+            await context.SaveChangesAsync();
         }
     }
 }
