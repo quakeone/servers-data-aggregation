@@ -10,6 +10,7 @@ using System.Threading.Tasks;
 
 namespace ServerDataAggregation.Persistence.Models
 {
+    [Index(nameof(LastQuery))]
     [Table("server_state")]
     public class ServerState
     {

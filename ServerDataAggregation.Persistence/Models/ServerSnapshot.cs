@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 
 namespace ServerDataAggregation.Persistence.Models
 {
+    [Index(nameof(TimeStamp))]
     [Table("server_snapshot")]
     public class ServerSnapshot
     {

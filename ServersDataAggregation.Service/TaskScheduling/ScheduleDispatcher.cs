@@ -41,31 +41,21 @@ public class ScheduleDispatcher : IHostedService
             , "Servers Synchrnoize"
             , new IntervalSchedule(60, new IntervalScheduleOptions{RunImmediately = true}));
 
-        //_dbContext.Servers.Add(new ServerDataAggregation.Persistence.Models.Server { Active = true });
-        //_dbContext.SaveChanges();
-        // Add Queries schedule task 
-        //var queryController = new Server.ServerQueryController(
-        //    pDataSessionFactory
-        //    , new QSB.GameServerInterface.ServerInterface()
-        //    );
-
         var queryServers = new QueryServers();
         var queryTask = new ScheduledTask(
             queryServers.Execute
             , "Query Thread"
             , new IntervalSchedule(3));
 
-        //// For Reporting and Rollup tables - scheduled task(s)
-        //QSB.Server.ServerManager serverManager = new QSB.Server.ServerManager(pDataSessionFactory);
-
-        //var aggregatorTask = new ScheduledTask(
-        //    serverManager
-        //    , new QSB.Common.TaskScheduling.Task(serverManager.SavePreviousDaysHistoricalSummery)
-        //    , "HistoricalHourlySummery"
-        //    , new QSB.Common.TaskScheduling.TimeOfDaySchedule(new TimeSpan(0, 1, 0)));
+        var cleanup = new Cleanup();
+        var cleanupTask = new ScheduledTask(
+            cleanup.Execute
+            , "Cleanup"
+            , new IntervalSchedule(60));
 
         _scheduledtasks = new List<ScheduledTask>()
         {
+            cleanupTask,
             queryTask,
             sycnrhonizeServersTask
         };

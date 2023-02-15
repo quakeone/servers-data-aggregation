@@ -26,7 +26,7 @@ namespace ServerDataAggregation.Persistence
             {
                 throw new Exception("Database environment variables not set. Please set DB_HOST, DB_USER and DB_PASS");
             }
-            // options.UseSqlite($"Data Source={DbPath}");
+
             options.UseNpgsql(
                 $"Host={host};Database = {database}; Port = {port}; User id = {user}; Password = {password}",
                 x => x.MigrationsAssembly("ServerDataAggregation.Persistence")

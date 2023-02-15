@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Microsoft.EntityFrameworkCore;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
@@ -8,6 +9,10 @@ using System.Threading.Tasks;
 
 namespace ServerDataAggregation.Persistence.Models
 {
+    [Index(nameof(Active))]
+    [Index(nameof(ApiKey))]
+    [Index(nameof(Source))]
+    [Index(nameof(Address), nameof(Port))]
     [Table("server")]
     public class Server
     {
