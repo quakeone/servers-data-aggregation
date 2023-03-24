@@ -98,7 +98,7 @@ namespace ServersDataAggregation.Query.Master
 
         public ServerAddress[] GetServers( string game, string url, int port=27950)
         {
-            var udp = new UdpUtility(url, port);
+            var udp = new UdpUtility(url, port, 5000, 5000);
             byte[] receivedBytes;
             var list = new List<ServerAddress>();
             try
