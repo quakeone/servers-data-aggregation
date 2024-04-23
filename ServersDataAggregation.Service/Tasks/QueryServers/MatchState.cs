@@ -157,9 +157,9 @@ namespace ServersDataAggregation.Service.Tasks.QueryServers
 
             var fragResetCount = playerMatches.Count(p => p.IsFragReset);
 
-            if (fragResetCount > 2)
+            if (fragResetCount > 0)
             {
-                ServerDebug($"Ending Match - Frag Reset count is more than 2:  {fragResetCount}");
+                ServerDebug($"Ending Match - Frag Reset count is more than 0:  {fragResetCount}");
                 return true;
             }
             if (activePlayers.Length < 2)

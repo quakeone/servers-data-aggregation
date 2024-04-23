@@ -14,16 +14,16 @@ namespace ServersDataAggregation.Service.Tasks.QueryServers
 
         // This is far from perfect
         // if frags has dropped more than 2
-        // and match.frags > 0
-        // and state.frags < 3
+        // and match.frags is non-zero
+        // and state.frags is close to zero
         public bool IsFragReset
         {
             get
             {
                 if (match != null && state != null)
                 {
-                    if (match.Frags > 0 && state.Frags < 3
-                        && state.Frags < (match.Frags - 1))
+                    if (Math.Abs(match.Frags) > 0 && Math.Abs(state.Frags) < 2
+                        && Math.Abs(state.Frags) < (Math.Abs(match.Frags) - 1))
                     {
                         return true;
                     }
