@@ -139,9 +139,9 @@ namespace ServersDataAggregation.Service.Tasks.QueryServers
 
             var playersWithFrags = activePlayers.Count(ap => ap.Frags > 0);
 
-            if (regularPlayerCount > 0 && activePlayers.Length > 1 && playersWithFrags > 0)
+            if (regularPlayerCount > 1 && activePlayers.Length > 1 && playersWithFrags > 0)
             {
-                ServerDebug($"Match Start Detected - {activePlayers.Length} activePlayers and {playersWithFrags} with non-zero frags");
+                ServerDebug($"Match Start Detected - more than 1 ({activePlayers.Length}) non-bot players and at least 1({playersWithFrags}) with non-zero frags");
                 return true;
             }
             return false;
@@ -162,19 +162,20 @@ namespace ServersDataAggregation.Service.Tasks.QueryServers
             var activePlayers = _serverState.Players
                 .Where(IsActivePlayer)
                 .ToArray();
-                
+
             var regularPlayers = _serverState.Players.Count(IsRegularPlayer);
 
             var fragResetCount = playerMatches.Count(p => p.IsFragReset);
+            var fragResetPlayers = playerMatches.Where(p => p.IsFragReset).ToArray();
 
-            if (regularPlayers < 1)
+            if (regularPlayers < 2)
             {
-                ServerDebug($"Ending Match - No more regularPlayers");
+                ServerDebug($"Ending Match - Less than two non-bot players on server");
                 return true;
             }
             if (fragResetCount > 0)
             {
-                ServerDebug($"Ending Match - Frag Reset count is more than 0:  {fragResetCount}");
+                ServerDebug($"Ending Match - Frag Reset count is more than 0:  {fragResetCount} ({string.Join(", ", fragResetPlayers.Select(p => p.state?.Name))})");
                 return true;
             }
             if (activePlayers.Length < 2)
@@ -211,8 +212,8 @@ namespace ServersDataAggregation.Service.Tasks.QueryServers
                 return true;
             }
 
-            if (currentMatch.PlayerMatches.Count(pm => pm.Type == 0) < 1) {
-                ServerDebug($"Discarding Match - No normal players in match");
+            if (currentMatch.PlayerMatches.Count(pm => pm.Type == 0) < 2) {
+                ServerDebug($"Discarding Match - Less than two non-bot players in match");
                 return true;
             }
 
