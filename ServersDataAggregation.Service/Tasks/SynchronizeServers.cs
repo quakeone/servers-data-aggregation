@@ -88,10 +88,24 @@ public class SynchronizeServers
 
         return Synchronize(currentServers, servers);
     }
-    private Server[] SynchronizeDPMaster(ServerState[] currentServers)
+    private Server[] SynchronizeFTEMaster(ServerState[] currentServers)
     {
         var dpMasterService = new Services.DpMaster.Service();
         var servers = dpMasterService.GetFTEServers();
+
+        return Synchronize(currentServers, servers);
+    }
+    private Server[] SynchronizeDPMaster(ServerState[] currentServers)
+    {
+        var dpMasterService = new Services.DpMaster.Service();
+        var servers = dpMasterService.GetDPServers();
+
+        return Synchronize(currentServers, servers);
+    }
+    private Server[] SynchronizeQWMaster(ServerState[] currentServers)
+    {
+        var qwMasterService = new Services.QWMaster.Service();
+        var servers = qwMasterService.GetQWServers();
 
         return Synchronize(currentServers, servers);
     }
@@ -105,8 +119,12 @@ public class SynchronizeServers
                 .ToArrayAsync();
 
             var newServers = new List<Server>();
+            //newServers.AddRange(SynchronizeQWMaster(currentServers));
             newServers.AddRange(await SynchronizeQSB(currentServers));
+            newServers.AddRange(SynchronizeFTEMaster(currentServers));
             newServers.AddRange(SynchronizeDPMaster(currentServers));
+            //newServers.AddRange(await SynchronizeQServersNet(currentServers));
+
             var distinctNewServers = newServers.DistinctBy(s => $"{s.Address}:{s.Port}");
 
             if (distinctNewServers.Count() > 0)

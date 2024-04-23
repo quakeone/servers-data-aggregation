@@ -16,8 +16,4 @@
     </Reference>
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="Master\Packets\" />
-  </ItemGroup>
-
 </Project>

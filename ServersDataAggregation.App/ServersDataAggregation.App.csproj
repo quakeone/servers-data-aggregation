@@ -17,6 +17,9 @@
   </ItemGroup>
 
   <ItemGroup>
+    <None Update=".env">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
     <None Update="appsettings.Production.json">
       <Generator>SettingsSingleFileGenerator</Generator>
       <LastGenOutput>appsettings.Production.Designer.cs</LastGenOutput>
