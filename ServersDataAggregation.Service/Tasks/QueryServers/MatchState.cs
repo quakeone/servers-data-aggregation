@@ -98,6 +98,11 @@ namespace ServersDataAggregation.Service.Tasks.QueryServers
             return list.ToArray();
         }
 
+        private bool IsRegularPlayer(PlayerState player)
+        {
+            return player.Type == 0;
+        }
+
         private bool IsActivePlayer(PlayerState player)
         {
             if (player.Frags == -99)
@@ -129,9 +134,12 @@ namespace ServersDataAggregation.Service.Tasks.QueryServers
                 .Where(IsActivePlayer)
                 .ToArray();
 
+            var regularPlayerCount = _serverState.Players
+                .Count(IsRegularPlayer);
+
             var playersWithFrags = activePlayers.Count(ap => ap.Frags > 0);
 
-            if (activePlayers.Length > 1 && playersWithFrags > 0)
+            if (regularPlayerCount > 0 && activePlayers.Length > 1 && playersWithFrags > 0)
             {
                 ServerDebug($"Match Start Detected - {activePlayers.Length} activePlayers and {playersWithFrags} with non-zero frags");
                 return true;
@@ -145,7 +153,7 @@ namespace ServersDataAggregation.Service.Tasks.QueryServers
             {
                 ServerDebug($"Ending Match - Waiting for Teams detected");
                 return true;
-            } 
+            }
             else if(_serverState.MatchStatus == (int)MatchStatus.MatchInProgress)
             {
                 return false;
@@ -154,9 +162,16 @@ namespace ServersDataAggregation.Service.Tasks.QueryServers
             var activePlayers = _serverState.Players
                 .Where(IsActivePlayer)
                 .ToArray();
+                
+            var regularPlayers = _serverState.Players.Count(IsRegularPlayer);
 
             var fragResetCount = playerMatches.Count(p => p.IsFragReset);
 
+            if (regularPlayers < 1)
+            {
+                ServerDebug($"Ending Match - No more regularPlayers");
+                return true;
+            }
             if (fragResetCount > 0)
             {
                 ServerDebug($"Ending Match - Frag Reset count is more than 0:  {fragResetCount}");
@@ -193,6 +208,11 @@ namespace ServersDataAggregation.Service.Tasks.QueryServers
             if (length.TotalSeconds < MATCH_LENGTH_ALLOWANCE_SECONDS)
             {
                 ServerDebug($"Discarding Match - Length was {Math.Floor(length.TotalSeconds)}secs (threshold is {MATCH_LENGTH_ALLOWANCE_SECONDS}secs)");
+                return true;
+            }
+
+            if (currentMatch.PlayerMatches.Count(pm => pm.Type == 0) < 1) {
+                ServerDebug($"Discarding Match - No normal players in match");
                 return true;
             }
 
