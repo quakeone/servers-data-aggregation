@@ -7,6 +7,7 @@ env:
   AWS_REGION: us-east-2
   ECR_REPOSITORY: servers-data-aggregation
   IMAGE_TAG: ${{ github.run_number }}
+  ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION: true
 jobs:
   build:
     name: Build Image
@@ -46,7 +47,7 @@ jobs:
       run: docker rm data-aggregation
 
     - name: Configure AWS credentials
-      uses: aws-actions/configure-aws-credentials@v1
+      uses: aws-actions/configure-aws-credentials@v1-node16
       with:
         aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
         aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
