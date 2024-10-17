@@ -51,7 +51,9 @@ public class SynchronizeServers
         var toEnable = existingFromSource
             .Where(existing => 
                 !existing.ServerDefinition.Active &&
-                fromSource.Any(sourceServer => ServerMatch(existing.ServerDefinition, sourceServer))
+                fromSource.Any(sourceServer => 
+                    sourceServer.Active && // Only enable if the source is also active
+                    ServerMatch(existing.ServerDefinition, sourceServer))
         );
 
         var toDisable = existingFromSource

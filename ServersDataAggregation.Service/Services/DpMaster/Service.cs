@@ -18,6 +18,8 @@ public class Service
 {
     public Service() { }
 
+    private bool IsNetquakePort(int port) => port >= 26000 && port <= 26999;
+
     public Db.Server[] GetDPServers()
     {
         var game = "DarkPlaces-Quake";
@@ -64,7 +66,7 @@ public class Service
                         Address = address.Address,
                         QueryInterval = 20,
                         Mod = "",
-                        Active = true,
+                        Active = IsNetquakePort(address.Port), // Only activate if this is a known port. Otherwise manual activation is required.
                         ApiKey = Guid.NewGuid().ToString(),
                         Parameters = @"{ ""Engine"": ""fte"" }",
                         Source = url

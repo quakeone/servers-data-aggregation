@@ -141,7 +141,7 @@ namespace ServersDataAggregation.Service.Tasks.QueryServers
 
             if (regularPlayerCount > 1 && activePlayers.Length > 1 && playersWithFrags > 0)
             {
-                ServerDebug($"Match Start Detected - more than 1 ({activePlayers.Length}) non-bot players and at least 1({playersWithFrags}) with non-zero frags");
+                ServerDebug($"Match Start Detected - more than 1 ({regularPlayerCount}) non-bot players and at least 1({playersWithFrags}) with non-zero frags");
                 return true;
             }
             return false;
