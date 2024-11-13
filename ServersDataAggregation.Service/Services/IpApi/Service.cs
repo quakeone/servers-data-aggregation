@@ -19,6 +19,11 @@ public class Service
         {
             using (var response = await httpClient.GetAsync($"{URL}{address}"))
             {
+                if (response.StatusCode == System.Net.HttpStatusCode.TooManyRequests)
+                {
+                    Logging.LogWarning("Throttled by IP API service");
+                    return new IpResult { status = "fail" };
+                }
                 string apiResponse = await response.Content.ReadAsStringAsync();
                 try
                 {

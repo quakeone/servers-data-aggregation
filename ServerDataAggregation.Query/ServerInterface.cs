@@ -36,9 +36,9 @@ public class ServerInterface
 
         switch(parameters.Engine)
         {
-            case "fte":
-                infoProvider = new Games.QuakeWorld.QuakeWorld(parameters);
-                break;
+            //case "fte":
+            //    infoProvider = new Games.QuakeWorld.QuakeWorld(parameters);
+            //    break;
             case "dp":
                 infoProvider = new Games.Quake3.Quake3();
                 break;
