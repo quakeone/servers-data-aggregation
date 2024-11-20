@@ -68,7 +68,7 @@ public class Service
                         Mod = "",
                         Active = IsNetquakePort(address.Port), // Only activate if this is a known port. Otherwise manual activation is required.
                         ApiKey = Guid.NewGuid().ToString(),
-                        Parameters = @"{ ""Engine"": ""fte"" }",
+                        Parameters = null,
                         Source = url
                     })
                 .Concat(
@@ -82,7 +82,7 @@ public class Service
                         Mod = "",
                         Active = true,
                         ApiKey = Guid.NewGuid().ToString(),
-                        Parameters = @"{ ""Engine"": ""fte"" }",
+                        Parameters = null,
                         Source = url
                     })
                 ).ToArray();

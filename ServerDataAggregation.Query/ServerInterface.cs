@@ -36,9 +36,10 @@ public class ServerInterface
 
         switch(parameters.Engine)
         {
-            //case "fte":
-            //    infoProvider = new Games.QuakeWorld.QuakeWorld(parameters);
-            //    break;
+            // FTE doesn't work well with the netquake query protocol (constantly goes dark), use QW instead.
+            case "fte":
+                infoProvider = new Games.QuakeWorld.QuakeWorld(parameters);
+                break;
             case "dp":
                 infoProvider = new Games.Quake3.Quake3();
                 break;
