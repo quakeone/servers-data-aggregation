@@ -11,6 +11,7 @@ namespace ServerDataAggregation.Persistence
         public DbSet<ServerMatch> ServerMatches { get; set; }
         public DbSet<PlayerMatch> PlayerMatches { get; set; }
         public DbSet<PlayerMatchProgress> PlayerMatchProgresses { get; set; }
+        public DbSet<ServerMatchActual> ServerMatchActuals { get; set; }
 
         // The following configures EF to create a Sqlite database file in the
         // special "local" folder for your platform.
