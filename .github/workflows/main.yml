@@ -4,71 +4,35 @@ on:
     branches: [ main ]
 
 env:
-  AWS_REGION: us-east-2
-  ECR_REPOSITORY: servers-data-aggregation
-  IMAGE_TAG: ${{ github.run_number }}
-  ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION: true
+  DOCKER_REGISTRY: registry.ropenttd.com
+  IMAGE_NAME: servers-data-aggregation
+
 jobs:
   build:
-    name: Build Image
+    name: Build and Push Image
     runs-on: ubuntu-latest
     steps:
     - name: Check out code
       uses: actions/checkout@v2
-    
-    - name: Configure AWS credentials
-      uses: aws-actions/configure-aws-credentials@v1
-      with:
-        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-        aws-region: ${{ env.AWS_REGION }}
 
-    - name: Login to Amazon ECR
-      id: login-ecr
-      uses: aws-actions/amazon-ecr-login@v1
+    - name: Set short commit hash
+      run: echo "IMAGE_TAG=$(echo ${{ github.sha }} | cut -c1-7)" >> $GITHUB_ENV
 
-    - name: Build, tag, and push image to Amazon ECR
-      env:
-        ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+    - name: Set up QEMU
+      uses: docker/setup-qemu-action@v2
+
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v2
+
+    - name: Login to Docker Registry
       run: |
-        docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
-        docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
-  deploy:
-    name: Deploy to Env
-    needs: [build]
-    runs-on: quakeone-instance
-    steps:
-    - name: Stop existing container
-      continue-on-error: true
-      run: docker stop data-aggregation
+        echo "${{ secrets.DOCKER_PASSWORD }}" | docker login ${{ env.DOCKER_REGISTRY }} -u "docker" --password-stdin
 
-    - name: RM existing container
-      continue-on-error: true
-      run: docker rm data-aggregation
-
-    - name: Configure AWS credentials
-      uses: aws-actions/configure-aws-credentials@v1-node16
-      with:
-        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-        aws-region: ${{ env.AWS_REGION }}
-
-    - name: Login to Amazon ECR
-      id: login-ecr
-      uses: aws-actions/amazon-ecr-login@v1
-
-    - name: Run new container
-      env:
-        ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+    - name: Build and push multi-platform image
       run: |
-        docker run -d \
-          -e "DB_USER=docker" \
-          -e "DB_HOST=postgres" \
-          -e "DB=servers" \
-          -e "DB_PASS=${{ secrets.DB_PASS }}" \
-          -e "DB_PORT=5432" \
-          -e "QE_PSK=${{ secrets.QE_PSK }}" \
-          --network=data-aggregation \
-          --restart=always \
-          --name data-aggregation \
-          $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
+        docker buildx build \
+          --platform linux/amd64,linux/arm64 \
+          --tag ${{ env.DOCKER_REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAG }} \
+          --tag ${{ env.DOCKER_REGISTRY }}/${{ env.IMAGE_NAME }}:latest \
+          --push \
+          .
