@@ -12,8 +12,6 @@ using System.Net;
 
 namespace ServersDataAggregation.Service.Services.DpMaster;
 
-
-
 public class Service
 {
     public Service() { }
@@ -35,19 +33,21 @@ public class Service
         {
             Logging.LogWarning($"Error synchronizing with master server {url}: {ex.Message}");
         }
-        return newServers.Select(address =>
-            new Db.Server
-            {
-                GameId = (int)Game.NetQuake,
-                Port = address.Port,
-                Address = address.Address,
-                QueryInterval = 20,
-                Mod = "",
-                Active = true,
-                ApiKey = Guid.NewGuid().ToString(),
-                Parameters = @"{ ""Engine"": ""dp"" }",
-                Source = url
-            }).ToArray();
+        return newServers
+            .Where(address => IsNetquakePort(address.Port))
+            .Select(address =>
+                new Db.Server
+                {
+                    GameId = (int)Game.NetQuake,
+                    Port = address.Port,
+                    Address = address.Address,
+                    QueryInterval = 20,
+                    Mod = "",
+                    Active = true,
+                    ApiKey = Guid.NewGuid().ToString(),
+                    Parameters = @"{ ""Engine"": ""dp"" }",
+                    Source = url
+                }).ToArray();
     }
 
     public Db.Server[] GetFTEServers()
@@ -58,7 +58,9 @@ public class Service
         var newServers = new Db.Server[0];
         try
         {
-            newServers = master.GetServers("FTE-Quake", url).Select(address =>
+            newServers = master.GetServers("FTE-Quake", url)
+                .Where(address => IsNetquakePort(address.Port))
+                .Select(address =>
                     new Db.Server
                     {
                         GameId = (int)Game.NetQuake,
@@ -66,25 +68,27 @@ public class Service
                         Address = address.Address,
                         QueryInterval = 20,
                         Mod = "",
-                        Active = IsNetquakePort(address.Port), // Only activate if this is a known port. Otherwise manual activation is required.
-                        ApiKey = Guid.NewGuid().ToString(),
-                        Parameters = null,
-                        Source = url
-                    })
-                .Concat(
-                 master.GetServers("FTE-QuakeRerelease", url).Select(address =>
-                    new Db.Server
-                    {
-                        GameId = (int)Game.QuakeEnhanced,
-                        Port = address.Port,
-                        Address = address.Address,
-                        QueryInterval = 20,
-                        Mod = "",
                         Active = true,
                         ApiKey = Guid.NewGuid().ToString(),
                         Parameters = null,
-                        Source = url
+                        Source = String.Format("{0}:{1}", url, "FTE-Quake")
                     })
+                .Concat(
+                 master.GetServers("FTE-QuakeRerelease", url)
+                    .Where(address => IsNetquakePort(address.Port))
+                    .Select(address =>
+                        new Db.Server
+                        {
+                            GameId = (int)Game.QuakeEnhanced,
+                            Port = address.Port,
+                            Address = address.Address,
+                            QueryInterval = 20,
+                            Mod = "",
+                            Active = true,
+                            ApiKey = Guid.NewGuid().ToString(),
+                            Parameters = null,
+                            Source = String.Format("{0}:{1}", url, "FTE-QuakeRerelease")
+                        })
                 ).ToArray();
         }
         catch (Exception ex)
