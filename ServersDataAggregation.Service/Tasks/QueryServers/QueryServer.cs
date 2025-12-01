@@ -105,7 +105,7 @@ internal class QueryServer
 
         // Get the elapsed time as a TimeSpan value.
         TimeSpan ts = stopWatch.Elapsed;
-
+            
         if (snapshotResult.Item2 == ServerStatus.Running)
         {
             Debug.WriteLine($"Successful query on {_serverState} in {ts.Seconds}.{ts.Milliseconds} seconds");

@@ -40,32 +40,18 @@ public class SynchronizeServers
             return new Server[0];
         }
 
-        var existingFromSource = currentServers
-            .Where(existing => existing.ServerDefinition.Source == fromSource[0].Source)
-            .ToList();
-
         // Find servers from this source that haven't been added yet
         var uniquelyAddedFromSource = fromSource.Where(maybeAdd =>
-            !existingFromSource.Any(existing => ServerMatch(existing.ServerDefinition, maybeAdd)));
+            !currentServers.Any(existing => ServerMatch(existing.ServerDefinition, maybeAdd)));
 
-        var toEnable = existingFromSource
-            .Where(existing => 
-                !existing.ServerDefinition.Active &&
-                fromSource.Any(sourceServer => 
-                    sourceServer.Active && // Only enable if the source is also active
-                    ServerMatch(existing.ServerDefinition, sourceServer))
+        var toEnable = currentServers.Where(existing => 
+            !existing.ServerDefinition.Active &&
+            fromSource.Any(sourceServer => 
+                sourceServer.Active && // Only enable if the source is also active
+                ServerMatch(existing.ServerDefinition, sourceServer))
         );
 
-        var toDisable = existingFromSource
-            .Where(existing => {
-                return existing.ServerDefinition.Active
-                && !fromSource.Any(fromSource => ServerMatch(existing.ServerDefinition, fromSource));
-            });
 
-        foreach(var server in toDisable)
-        {
-            server.ServerDefinition.Active = false;
-        }
         foreach (var server in toEnable)
         {
             server.ServerDefinition.Active = true;
