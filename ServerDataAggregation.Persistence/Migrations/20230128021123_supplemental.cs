@@ -57,7 +57,7 @@ LEFT JOIN server_match sm ON
                         ORDER BY match_start 
                         DESC LIMIT 1)
 	
-WHERE s.active = true
+WHERE s.active = true and ss.failed_query_attempts < 120
 ");
         }
 
