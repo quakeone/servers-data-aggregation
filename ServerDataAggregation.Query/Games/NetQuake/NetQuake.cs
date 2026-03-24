@@ -1,4 +1,5 @@
 ﻿using ServersDataAggregation.Common.Model;
+using ServersDataAggregation.Common.Enums;
 using ServersDataAggregation.Query.Games.Common;
 using ServersDataAggregation.Query.Games.NetQuake.Packets;
 using System.Text;
