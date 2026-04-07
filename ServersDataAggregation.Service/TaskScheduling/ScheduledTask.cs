@@ -46,7 +46,8 @@ public class ScheduledTask
         }
         catch(Exception ex)
         {
-            PublishMessage("Error encountered executing: " + Name + Environment.NewLine + "Exception Detail: " + ex.ToString());  
+            Console.Error.WriteLine($"Error in task '{Name}': {ex}");
+            PublishMessage("Error encountered executing: " + Name + Environment.NewLine + "Exception Detail: " + ex.ToString());
         }
         finally
         {
