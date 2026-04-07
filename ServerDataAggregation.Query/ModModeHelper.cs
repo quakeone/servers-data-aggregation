@@ -58,6 +58,10 @@ public static class ModModeHelper
         {
             mod.Mode = "tdm";
         }
+        else if (value.Contains("crmod++ duel"))
+        {
+            mod.Mode = "duel";
+        }
         else if (value.Contains("airshot"))
         {
             mod.Mode = "airshot";
@@ -70,16 +74,29 @@ public static class ModModeHelper
         {
             mod.Mode = "ra";
         }
+        else if (value.Contains("clanarenawipeout"))
+        {
+            mod.Mode = "caw";
+        }
+        else if (value.Contains("clanarena"))
+        {
+            mod.Mode = "ca";
+        }
+        else if (value.Contains("head hunters"))
+        {
+            mod.Mode = "hh";
+        }
+        else if (value.Contains("crctf pickup"))
+        {
+            mod.Mode = "ctf";
+        }
         else if (value.Contains("practice"))
         {
             mod.Mode = "practice";
         }
-        else if (value.Contains("clanarena"))
+        else if (value.Contains("team deathmatch"))
         {
-            if (value.Contains("wipeout"))
-                mod.Mode = "caw";
-            else
-                mod.Mode = "ca";
+            mod.Mode = "tdm";
         }
         return mod;
     }
@@ -143,6 +160,15 @@ public static class ModModeHelper
             if (mode != null)
             {
                 return mode;
+            }
+        }
+        var modname = settings.FirstOrDefault(s => s.Setting.ToLower() == "modname");
+        if (modname != null && modname.Value.ToLower() == "crmod7")
+        {
+            var fraglimitSetting = settings.FirstOrDefault(s => s.Setting.ToLower() == "fraglimit");
+            if (fraglimitSetting != null)
+            {
+                return CRModMode(fraglimitSetting);
             }
         }
         var teamplay = settings.FirstOrDefault(s => s.Setting.ToLower() == "teamplay");
