@@ -30,7 +30,6 @@ public class ScheduleDispatcher : IHostedService
         {
             // migrate any database changes on startup (includes initial db creation)
             context.Database.Migrate();
-            context.Database.EnsureCreated();
         }
         _logger = logger;
 
@@ -109,6 +108,7 @@ public class ScheduleDispatcher : IHostedService
                     {
                         foreach(var ex in t.Exception.InnerExceptions)
                         {
+                            _logger.LogError(ex, "Task '{TaskName}' failed", task.Name);
                             PublishException(task.Name, ex);
                         }
                     }, TaskContinuationOptions.OnlyOnFaulted);
