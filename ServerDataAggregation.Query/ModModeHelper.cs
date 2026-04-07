@@ -162,8 +162,7 @@ public static class ModModeHelper
                 return mode;
             }
         }
-        var modname = settings.FirstOrDefault(s => s.Setting.ToLower() == "modname");
-        if (modname != null && modname.Value.ToLower() == "crmod7")
+        if (mod != null && mod.Value.StartsWith("nqCRx"))
         {
             var fraglimitSetting = settings.FirstOrDefault(s => s.Setting.ToLower() == "fraglimit");
             if (fraglimitSetting != null)
