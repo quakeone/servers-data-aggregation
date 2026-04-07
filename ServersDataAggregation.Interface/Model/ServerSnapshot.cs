@@ -54,6 +54,10 @@ namespace ServersDataAggregation.Common.Model
         /// </summary>
         public MatchStatus MatchStatus { get; set; }
         /// <summary>
+        /// Detailed match information for display
+        /// </summary>
+        public MatchInfo MatchInfo { get; set; }
+        /// <summary>
         /// Frag Limit of game/match
         /// </summary>
         public int  Timelimit { get; set; }

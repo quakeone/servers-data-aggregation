@@ -32,8 +32,8 @@ namespace ServerDataAggregation.Persistence.Models
         public virtual string? Mod { get; set; }
         [Column("mode")]
         public virtual string? Mode { get; set; }
-        [Column("match_status")]
-        public virtual int MatchStatus { get; set; }
+        [Column("match_info")]
+        public virtual MatchInfo MatchInfo { get; set; }
         [Column("ip_address")]
         public virtual string? IpAddress { get; set; }
         [Column("max_players")]
@@ -63,6 +63,28 @@ namespace ServerDataAggregation.Persistence.Models
             }
             return ServerDefinition.Address + ":" + ServerDefinition.Port;
         }
+    }
+
+    [NotMapped]
+    public class MatchInfo
+    {
+        public int Status { get; set; }
+        public int? MatchLengthMin { get; set; }
+        public int? MatchTimeRemainingMin { get; set; }
+        public bool IsSuddenDeath { get; set; }
+        public int? Round { get; set; }
+        public int? RoundTotal { get; set; }
+        public int? RedFlagStatus { get; set; }
+        public int? BlueFlagStatus { get; set; }
+        public TeamScore Team1 { get; set; }
+        public TeamScore Team2 { get; set; }
+    }
+
+    [NotMapped]
+    public class TeamScore
+    {
+        public string Color { get; set; }
+        public int Score { get; set; }
     }
 
     [NotMapped]
@@ -124,6 +146,7 @@ namespace ServerDataAggregation.Persistence.Models
         {
             // This Converter will perform the conversion to and from Json to the desired type
             builder.Property(e => e.Players).HasJsonConversion();
+            builder.Property(e => e.MatchInfo).HasJsonConversion();
         }
     }
 }

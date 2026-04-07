@@ -109,7 +109,19 @@ namespace ServersDataAggregation.Service.Tasks.QueryServers
             _serverState.MaxPlayers = _snapshot.MaxPlayerCount;
             _serverState.Fraglimit = _snapshot.Fraglimit;
             _serverState.Timelimit = _snapshot.Timelimit;
-            _serverState.MatchStatus = (int)_snapshot.MatchStatus;
+            _serverState.MatchInfo = _snapshot.MatchInfo != null ? new Db.MatchInfo
+            {
+                Status = (int)_snapshot.MatchInfo.Status,
+                MatchLengthMin = _snapshot.MatchInfo.MatchLengthMin,
+                MatchTimeRemainingMin = _snapshot.MatchInfo.MatchTimeRemainingMin,
+                IsSuddenDeath = _snapshot.MatchInfo.IsSuddenDeath,
+                Round = _snapshot.MatchInfo.Round,
+                RoundTotal = _snapshot.MatchInfo.RoundTotal,
+                RedFlagStatus = _snapshot.MatchInfo.RedFlagStatus != null ? (int)_snapshot.MatchInfo.RedFlagStatus : null,
+                BlueFlagStatus = _snapshot.MatchInfo.BlueFlagStatus != null ? (int)_snapshot.MatchInfo.BlueFlagStatus : null,
+                Team1 = _snapshot.MatchInfo.Team1 != null ? new Db.TeamScore { Color = _snapshot.MatchInfo.Team1.Color, Score = _snapshot.MatchInfo.Team1.Score } : null,
+                Team2 = _snapshot.MatchInfo.Team2 != null ? new Db.TeamScore { Color = _snapshot.MatchInfo.Team2.Color, Score = _snapshot.MatchInfo.Team2.Score } : null
+            } : new Db.MatchInfo();
             _serverState.ServerSettings = JsonSerializer.Serialize(_snapshot.ServerSettings);
             _serverState.Players = _snapshot.Players.Select(player =>
             {

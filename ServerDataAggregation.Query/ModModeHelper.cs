@@ -11,6 +11,11 @@ public static class ModModeHelper
                 || mode == "ca" || mode == "caw" || mode == "ra"
                 || mode == "airshot";
         }
+        if (mod == "KTX")
+        {
+            return mode == "tdm" || mode == "ctf" || mode == "duel"
+                || mode == "ca" || mode == "caw" || mode == "ra";
+        }
         return mode == "tdm" || mode == "ctf" || mode == "duel";
     }
 
@@ -129,24 +134,37 @@ public static class ModModeHelper
     private static ModMode? KTXModMode(IEnumerable<ServerSetting> settings)
     {
         var modeVal = settings.FirstOrDefault(s => s.Setting.ToLower() == "mode");
-        var mode = "ffa";
-        switch(mode)
+        if (modeVal == null)
         {
-            case "ctf":
-                mode = "ctf";
-                break;
-            case "duel":
-            case "1on1":
-                mode = "duel";
-                break;
-            case "ffa":
-                mode = "ffa";
-                break;
-            case "2on2":
-            case "3on3":
-            case "4on4":
-                mode = "tdm";
-                break;
+            return new ModMode { Mod = "KTX", Mode = "ffa" };
+        }
+
+        // KTX mode format: "base[-submode]..." e.g. "4on4", "4on4-ca", "duel-instagib"
+        var parts = modeVal.Value.ToLower().Split('-');
+        var baseMode = parts[0];
+        var mode = baseMode switch
+        {
+            "ctf" => "ctf",
+            "duel" or "1on1" => "duel",
+            "2on2" or "3on3" or "4on4" => "tdm",
+            _ => "ffa"
+        };
+
+        // submodes override the base mode
+        for (int i = 1; i < parts.Length; i++)
+        {
+            switch (parts[i])
+            {
+                case "ca":
+                    mode = "ca";
+                    break;
+                case "wo":
+                    mode = "caw";
+                    break;
+                case "ra":
+                    mode = "ra";
+                    break;
+            }
         }
 
         return new ModMode

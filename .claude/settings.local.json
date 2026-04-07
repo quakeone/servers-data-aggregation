@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(grep -n \"forceinfokey\" src/*.qc)",
+      "Bash(grep -r \"timelimit\\\\|fraglimit\" /c/source/ktx/src/*.c)",
+      "Bash(grep -rn 'infokey.*world' /c/source/ktx/src/*.c)"
+    ]
+  }
+}

@@ -120,11 +120,11 @@ namespace ServersDataAggregation.Service.Tasks.QueryServers
 
         private bool IsStartMatch()
         {
-            if (_serverState.MatchStatus == (int)MatchStatus.WaitingForTeam)
+            if (_serverState.MatchInfo?.Status == (int)MatchStatus.WaitingForTeam)
             {
                 return false;
-            } 
-            else if (_serverState.MatchStatus == (int)MatchStatus.MatchInProgress)
+            }
+            else if (_serverState.MatchInfo?.Status == (int)MatchStatus.MatchInProgress)
             {
                 ServerDebug($"Match Start Detected - Match in Progress detected");
                 return true;
@@ -149,12 +149,12 @@ namespace ServersDataAggregation.Service.Tasks.QueryServers
          
         private bool IsEndMatch(ServerMatch currentMatch, IEnumerable<MatchPlayerState> playerMatches)
         {
-            if (_serverState.MatchStatus == (int)MatchStatus.WaitingForTeam)
+            if (_serverState.MatchInfo?.Status == (int)MatchStatus.WaitingForTeam)
             {
                 ServerDebug($"Ending Match - Waiting for Teams detected");
                 return true;
             }
-            else if(_serverState.MatchStatus == (int)MatchStatus.MatchInProgress)
+            else if (_serverState.MatchInfo?.Status == (int)MatchStatus.MatchInProgress)
             {
                 return false;
             }
