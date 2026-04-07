@@ -21,20 +21,24 @@ namespace ServersDataAggregation.Query
                 var split = value.Split(new string[] { " : " }, StringSplitOptions.RemoveEmptyEntries);
                 snapshot.Timelimit = int.TryParse(split[0], out number) ? number : 0;
 
-                if (ModModeHelper.SupportsTimedMatch(snapshot.Mode))
+                if (ModModeHelper.SupportsTimedMatch(snapshot.Mod, snapshot.Mode))
                 {
                     if (split[0].StartsWith("final score"))
                     {
                         snapshot.MatchStatus = Common.Enums.MatchStatus.WaitingForTeam;
-                    } 
+                    }
+                    else if (split[0].StartsWith("sudden death"))
+                    {
+                        snapshot.MatchStatus = Common.Enums.MatchStatus.MatchInProgress;
+                    }
                     else
                     {
                         if (split.Length > 1)
                         {
                             var secondHalf = split[1].ToLower();
-                            if (secondHalf.Contains("waiting for teams")) {
+                            if (secondHalf.Contains("waiting for")) {
                                 snapshot.MatchStatus = Common.Enums.MatchStatus.WaitingForTeam;
-                            } 
+                            }
                             else if (secondHalf.Contains("match starting"))
                             {
                                 snapshot.MatchStatus = Common.Enums.MatchStatus.MatchStarting;
@@ -61,13 +65,13 @@ namespace ServersDataAggregation.Query
             testRule = settings.FirstOrDefault(setting => setting.Setting.ToLower() == "status");
             if (testRule != null)
             {
-                if (ModModeHelper.SupportsTimedMatch(snapshot.Mode))
+                if (ModModeHelper.SupportsTimedMatch(snapshot.Mod, snapshot.Mode))
                 {
-                    
+
                     if (testRule.Value.Contains("min left"))
                     {
                         snapshot.MatchStatus = Common.Enums.MatchStatus.MatchInProgress;
-                    } 
+                    }
                     else
                     {
                         snapshot.MatchStatus = Common.Enums.MatchStatus.WaitingForTeam;

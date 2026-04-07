@@ -4,7 +4,13 @@ namespace ServersDataAggregation.Query;
 
 public static class ModModeHelper
 {
-    public static bool SupportsTimedMatch (string mode) {
+    public static bool SupportsTimedMatch (string mod, string mode) {
+        if (mod == "CRMod")
+        {
+            return mode == "tdm" || mode == "ctf" || mode == "duel"
+                || mode == "ca" || mode == "caw" || mode == "ra"
+                || mode == "airshot";
+        }
         return mode == "tdm" || mode == "ctf" || mode == "duel";
     }
 
