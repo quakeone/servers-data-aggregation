@@ -18,7 +18,8 @@ namespace ServerDataAggregation.Persistence.Migrations
                 name: "match_info",
                 table: "server_state",
                 type: "jsonb",
-                nullable: true);
+                nullable: false,
+                defaultValue: "{}");
 
             migrationBuilder.Sql("DROP VIEW v_server_state;");
             migrationBuilder.Sql(@"

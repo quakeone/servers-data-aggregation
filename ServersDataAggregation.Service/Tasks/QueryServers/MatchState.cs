@@ -29,7 +29,7 @@ namespace ServersDataAggregation.Service.Tasks.QueryServers
         // Match.currentMap != snapshot.currentMap
         // Active(Snapshot.players) < 2
 
-        const int MATCH_LENGTH_ALLOWANCE_SECONDS = 120; // 2 min
+        const int MATCH_LENGTH_ALLOWANCE_SECONDS = 300; // 5 min
         const int PLAYER_IDLE_ALLOWANCE_SECONDS = 1800; // 30 mins
         private static readonly byte[] AFK = new byte[]{(byte)' ', (byte)'A', (byte)'F', (byte)'K' };
 

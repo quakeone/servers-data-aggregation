@@ -33,7 +33,7 @@ public class SynchronizeServers
 
     private bool ServerMatch (Server A, Server B) => B.Address == A.Address && B.Port == A.Port;
 
-    private Server[] Synchronize(ServerState[] currentServers, Server[] fromSource)
+    private Server[] Synchronize(Server[] currentServers, Dictionary<int, string?> serverStateIps, Server[] fromSource)
     {
         if (fromSource.Length == 0)
         {
@@ -42,19 +42,19 @@ public class SynchronizeServers
 
         // Find servers from this source that haven't been added yet
         var uniquelyAddedFromSource = fromSource.Where(maybeAdd =>
-            !currentServers.Any(existing => ServerMatch(existing.ServerDefinition, maybeAdd)));
+            !currentServers.Any(existing => ServerMatch(existing, maybeAdd)));
 
-        var toEnable = currentServers.Where(existing => 
-            !existing.ServerDefinition.Active &&
-            fromSource.Any(sourceServer => 
+        var toEnable = currentServers.Where(existing =>
+            !existing.Active &&
+            fromSource.Any(sourceServer =>
                 sourceServer.Active && // Only enable if the source is also active
-                ServerMatch(existing.ServerDefinition, sourceServer))
+                ServerMatch(existing, sourceServer))
         );
 
 
         foreach (var server in toEnable)
         {
-            server.ServerDefinition.Active = true;
+            server.Active = true;
         }
 
         // Filter if it's been added by another source (match on resolved IP)
@@ -64,53 +64,57 @@ public class SynchronizeServers
             .Where(newServer =>
             {
                 var newIp = GetIP(newServer.Address);
-                return newIp == null || !currentServers.Any(s => s.IpAddress == newIp && s.ServerDefinition.Port == newServer.Port);
+                return newIp == null || !currentServers.Any(s =>
+                    serverStateIps.TryGetValue(s.ServerId, out var ip) && ip == newIp && s.Port == newServer.Port);
             })
             .ToArray();
     }
 
-    private async Task<Server[]> SynchronizeQSB(ServerState[] currentServers)
+    private async Task<Server[]> SynchronizeQSB(Server[] currentServers, Dictionary<int, string?> serverStateIps)
     {
         var qsbService = new Services.QSBApp.Service();
         var servers = await qsbService.GetServers();
 
-        return Synchronize(currentServers, servers);
+        return Synchronize(currentServers, serverStateIps, servers);
     }
-    private Server[] SynchronizeFTEMaster(ServerState[] currentServers)
+    private Server[] SynchronizeFTEMaster(Server[] currentServers, Dictionary<int, string?> serverStateIps)
     {
         var dpMasterService = new Services.DpMaster.Service();
         var servers = dpMasterService.GetFTEServers();
 
-        return Synchronize(currentServers, servers);
+        return Synchronize(currentServers, serverStateIps, servers);
     }
-    private Server[] SynchronizeDPMaster(ServerState[] currentServers)
+    private Server[] SynchronizeDPMaster(Server[] currentServers, Dictionary<int, string?> serverStateIps)
     {
         var dpMasterService = new Services.DpMaster.Service();
         var servers = dpMasterService.GetDPServers();
 
-        return Synchronize(currentServers, servers);
+        return Synchronize(currentServers, serverStateIps, servers);
     }
-    private Server[] SynchronizeQWMaster(ServerState[] currentServers)
+    private Server[] SynchronizeQWMaster(Server[] currentServers, Dictionary<int, string?> serverStateIps)
     {
         var qwMasterService = new Services.QWMaster.Service();
         var servers = qwMasterService.GetQWServers();
 
-        return Synchronize(currentServers, servers);
+        return Synchronize(currentServers, serverStateIps, servers);
     }
 
     public async Task Execute()
     {
         using (var context = new PersistenceContext())
         {
-            var currentServers = await context.ServerState
+            var currentServers = await context.Servers.ToArrayAsync();
+
+            var serverStateIps = await context.ServerState
                 .Include(ss => ss.ServerDefinition)
-                .ToArrayAsync();
+                .Where(ss => ss.ServerDefinition != null)
+                .ToDictionaryAsync(ss => ss.ServerDefinition.ServerId, ss => ss.IpAddress);
 
             var newServers = new List<Server>();
-            //newServers.AddRange(SynchronizeQWMaster(currentServers));
-            newServers.AddRange(await SynchronizeQSB(currentServers));
-            newServers.AddRange(SynchronizeFTEMaster(currentServers));
-            newServers.AddRange(SynchronizeDPMaster(currentServers));
+            //newServers.AddRange(SynchronizeQWMaster(currentServers, serverStateIps));
+            newServers.AddRange(await SynchronizeQSB(currentServers, serverStateIps));
+            newServers.AddRange(SynchronizeFTEMaster(currentServers, serverStateIps));
+            newServers.AddRange(SynchronizeDPMaster(currentServers, serverStateIps));
             //newServers.AddRange(await SynchronizeQServersNet(currentServers));
 
             var distinctNewServers = newServers.DistinctBy(s => $"{s.Address}:{s.Port}");

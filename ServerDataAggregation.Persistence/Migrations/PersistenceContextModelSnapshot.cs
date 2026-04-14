@@ -392,6 +392,7 @@ namespace ServerDataAggregation.Persistence.Migrations
                         .HasColumnName("map");
 
                     b.Property<ServerDataAggregation.Persistence.Models.MatchInfo>("MatchInfo")
+                        .IsRequired()
                         .HasColumnType("jsonb")
                         .HasColumnName("match_info");
 

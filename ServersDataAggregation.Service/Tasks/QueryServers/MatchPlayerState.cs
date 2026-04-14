@@ -22,6 +22,11 @@ namespace ServersDataAggregation.Service.Tasks.QueryServers
             {
                 if (match != null && state != null)
                 {
+                    
+                    if (match.Frags == -99 || state.Frags == -99)
+                    {
+                        return false;
+                    }
                     if (Math.Abs(match.Frags) > 0 && Math.Abs(state.Frags) < 2
                         && Math.Abs(state.Frags) < (Math.Abs(match.Frags) - 1))
                     {
