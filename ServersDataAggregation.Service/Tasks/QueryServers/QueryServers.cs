@@ -24,8 +24,9 @@ public class QueryServers
 
         var noState = await query.ToArrayAsync();
         if (noState.Length > 0) {
-            await context.ServerState.AddRangeAsync(noState.Select(server => new ServerState{
-                ServerDefinition = server
+            await context.ServerState.AddRangeAsync(noState.Select(server => new ServerState {
+                ServerDefinition = server,
+                MatchInfo = new MatchInfo() { }
             }));
             try {
                 await context.SaveChangesAsync();
