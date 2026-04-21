@@ -16,7 +16,7 @@ public class Service
 {
     public Service() { }
 
-    private bool IsNetquakePort(int port) => port >= 26000 && port <= 26999;
+    private bool IsNetquakePort(int port) => port >= 26000 && port <= 27999;
 
     public Db.Server[] GetDPServers()
     {
