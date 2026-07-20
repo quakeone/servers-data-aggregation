@@ -129,7 +129,9 @@ public class NetQuake : IServerInfoProvider
         playerSnapshot.PantColor = (int)pReplyPacket.PantColor;
         playerSnapshot.ShirtColor = (int)pReplyPacket.ShirtColor;
         playerSnapshot.PlayTime = TimeSpan.FromSeconds(pReplyPacket.PlayTime);
-        playerSnapshot.PlayerType = pReplyPacket.Address == "Bot" ? PlayerType.Bot : PlayerType.Normal;
+        playerSnapshot.PlayerType = pReplyPacket.Address == "Bot" || (playerSnapshot.Name?.ToLower().StartsWith("[bot]") ?? false)
+            ? PlayerType.Bot
+            : PlayerType.Normal;
 
         return playerSnapshot;
     }
