@@ -32,7 +32,7 @@ internal class QueryServer
         _serverState = serverState;
     }
 
-    private Tuple<Common.Model.ServerSnapshot?, ServerStatus> GetSnapshot()
+    private async Task<Tuple<Common.Model.ServerSnapshot?, ServerStatus>> GetSnapshot()
     {
         int pRetryCount = 0;
         ServerStatus status = ServerStatus.Running;
@@ -42,15 +42,17 @@ internal class QueryServer
             string retryString = "";
             if (pRetryCount > 0)
             {
-                Thread.Sleep(1000);
+                await Task.Delay(1000);
                 retryString = " (Retry #" + pRetryCount + ")";
             }
             Logging.LogTrace("Querying " + server.Address + ":" + server.Port.ToString() + retryString);
             try
             {
-                return new Tuple<Common.Model.ServerSnapshot?, ServerStatus>(
-                    ServerInterface.GetServerInfo(server.Address.Trim(), server.Port, (Game)server.GameId, server.Parameters),
-                    status);
+                // GetServerInfo blocks on UDP; keep it off the async path.
+                var snapshot = await Task.Run(() =>
+                    ServerInterface.GetServerInfo(server.Address.Trim(), server.Port, (Game)server.GameId, server.Parameters));
+
+                return new Tuple<Common.Model.ServerSnapshot?, ServerStatus>(snapshot, status);
             }
             catch (ServerNotRespondingException)
             {
@@ -99,7 +101,7 @@ internal class QueryServer
         Stopwatch stopWatch = new Stopwatch();
         stopWatch.Start();
 
-        var snapshotResult = GetSnapshot();
+        var snapshotResult = await GetSnapshot();
 
         stopWatch.Stop();
 
@@ -108,12 +110,12 @@ internal class QueryServer
             
         if (snapshotResult.Item2 == ServerStatus.Running)
         {
-            Debug.WriteLine($"Successful query on {_serverState} in {ts.Seconds}.{ts.Milliseconds} seconds");
+            Logging.LogDebug($"Successful query on {_serverState} in {ts.TotalMilliseconds:F0}ms");
             await SuccessQuery(snapshotResult.Item1);
         }
         else
         {
-            Debug.WriteLine($"Failed query on {_serverState} in {ts.Seconds}.{ts.Milliseconds} seconds");
+            Logging.LogDebug($"Failed query ({snapshotResult.Item2}) on {_serverState} in {ts.TotalMilliseconds:F0}ms");
             await FailedQuery(snapshotResult.Item2);
         }
     }

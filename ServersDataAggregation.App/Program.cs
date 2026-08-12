@@ -10,6 +10,12 @@ public class Program
     {
         DotEnv.Load(Path.Combine(Directory.GetCurrentDirectory(), ".env"));
         Logging.Initialize();
+
+        // Queries block a pool thread on UDP receive; pre-seed rather than wait out
+        // the pool's ~1-2 threads/sec ramp.
+        ThreadPool.GetMinThreads(out _, out int completionPortThreads);
+        ThreadPool.SetMinThreads(320, completionPortThreads);
+
         CreateHostBuilder(args).Build().Run();
     }
 

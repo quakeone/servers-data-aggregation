@@ -10,7 +10,8 @@ using System.Threading.Tasks;
 
 namespace ServerDataAggregation.Persistence.Models
 {
-    [Index(nameof(LastQuery))]
+    // Deliberately no index on LastQuery: it changes on every poll, and indexing it
+    // blocks HOT updates.
     [Table("server_state")]
     public class ServerState
     {

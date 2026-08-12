@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
@@ -33,5 +34,19 @@ namespace ServerDataAggregation.Persistence.Models
         public DateTime MatchStart { get; set; }
         [Column("match_end")]
         public DateTime? MatchEnd { get; set; }
+    }
+
+    public class ServerMatchConfiguration : IEntityTypeConfiguration<ServerMatch>
+    {
+        public void Configure(EntityTypeBuilder<ServerMatch> builder)
+        {
+            // Declared explicitly: the filtered index below would otherwise suppress
+            // EF's conventional FK index, which cascade deletes still need.
+            builder.HasIndex(new[] { "server_id" }, "IX_server_match_server_id");
+
+            // Serves the open-match lookup done on every poll; ~220 open of 83k rows.
+            builder.HasIndex(new[] { "server_id" }, "IX_server_match_server_id_open")
+                .HasFilter("match_end IS NULL");
+        }
     }
 }

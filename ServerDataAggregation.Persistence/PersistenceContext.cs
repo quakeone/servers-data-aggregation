@@ -38,6 +38,7 @@ namespace ServerDataAggregation.Persistence
             //TODO: Possibly add something like BaseEntityConfiguration?
             modelBuilder.ApplyConfiguration(new ServerSnapshotConfiguration());
             modelBuilder.ApplyConfiguration(new ServerStateConfiguration());
+            modelBuilder.ApplyConfiguration(new ServerMatchConfiguration());
         }
     }
 }

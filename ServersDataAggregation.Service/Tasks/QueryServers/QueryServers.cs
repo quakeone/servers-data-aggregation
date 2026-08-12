@@ -13,7 +13,10 @@ namespace ServersDataAggregation.Service.Tasks.QueryServers;
 
 public class QueryServers
 {
-    private async Task EnsureAllServerStateExists(PersistenceContext context) 
+    // UDP-bound work, not CPU-bound: intentionally far above the core count.
+    private const int MAX_CONCURRENT_QUERIES = 300;
+
+    private async Task EnsureAllServerStateExists(PersistenceContext context)
     {
         var query = from server in context.Set<Server>()
             join serverState in context.Set<ServerState>()
@@ -58,6 +61,10 @@ public class QueryServers
                     {
                         // Connected to the server, no response however
                         case ServerStatus.NotResponding:
+                            if (candidate.FailedQueryAttempts > 500)
+                                return candidate.LastQuery < DateTime.UtcNow.AddHours(-24);
+                            if (candidate.FailedQueryAttempts > 100)
+                                return candidate.LastQuery < DateTime.UtcNow.AddHours(-6);
                             if (candidate.FailedQueryAttempts > 20)
                                 return candidate.LastQuery < DateTime.UtcNow.AddHours(-1);
                             if (candidate.FailedQueryAttempts > 3)
@@ -65,11 +72,17 @@ public class QueryServers
                             break;
                         case ServerStatus.NotFound:
                             // Couldn't connect or find the server
+                            if (candidate.FailedQueryAttempts > 500)
+                                return candidate.LastQuery < DateTime.UtcNow.AddHours(-24);
+                            if (candidate.FailedQueryAttempts > 100)
+                                return candidate.LastQuery < DateTime.UtcNow.AddHours(-6);
                             if (candidate.FailedQueryAttempts > 3)
                                 return candidate.LastQuery < DateTime.UtcNow.AddHours(-1);
                             break;
                         case ServerStatus.QueryError:
-                            // Couldn't find the server
+                            // Couldn't parse the reply
+                            if (candidate.FailedQueryAttempts > 100)
+                                return candidate.LastQuery < DateTime.UtcNow.AddHours(-6);
                             if (candidate.FailedQueryAttempts > 3)
                                 return candidate.LastQuery < DateTime.UtcNow.AddMinutes(-5);
                             break;
@@ -99,9 +112,24 @@ public class QueryServers
     {
         var serversToQuery = await FindQueryableServers();
 
-        var queryTasks = serversToQuery
-            .AsParallel()
-            .Select(serverState => new QueryServer(serverState).DoQuery());
+        using var gate = new SemaphoreSlim(MAX_CONCURRENT_QUERIES);
+
+        var queryTasks = serversToQuery.Select(async serverState =>
+        {
+            await gate.WaitAsync();
+            try
+            {
+                await new QueryServer(serverState).DoQuery();
+            }
+            catch (Exception ex)
+            {
+                Logging.LogError(ex, $"Unhandled error querying {serverState.ServerDefinition}");
+            }
+            finally
+            {
+                gate.Release();
+            }
+        });
 
         await Task.WhenAll(queryTasks);
     }
