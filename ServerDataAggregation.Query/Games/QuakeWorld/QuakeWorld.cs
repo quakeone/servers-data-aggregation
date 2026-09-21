@@ -3,6 +3,7 @@ using ServersDataAggregation.Query.Games.QuakeWorld.Packets;
 using System.Collections;
 using System.Net.Sockets;
 using ServersDataAggregation.Common.Model;
+using ServersDataAggregation.Common.Enums;
 using ServersDataAggregation.Query.Games.NetQuake.Packets;
 using ServersDataAggregation.Query.Games.Common;
 
@@ -15,6 +16,7 @@ public class QuakeWorld : IServerInfoProvider
     private const string QW_SETTING_VERSION = "*version";
     private const string QW_SETTING_MAXPLAYERS = "maxclients";
     private const string QW_SETTING_MOD = "*gamedir";
+    private static readonly byte[] QW_BOT_PREFIX = Encoding.ASCII.GetBytes("BOT:");
     private ServerParameters _serverParams;
 
     public QuakeWorld(ServerParameters parameters)
@@ -64,6 +66,10 @@ public class QuakeWorld : IServerInfoProvider
         {
             sInfo.Players = pStatus.CurrentPlayers.Select(playerInfo => {
                 var playerName = NameHelper.ChkRemoveAfk(playerInfo.PlayerBytes);
+                // FTE prefixes bot names with "BOT:" in status replies
+                var isBot = playerName.AsSpan().StartsWith(QW_BOT_PREFIX);
+                if (isBot)
+                    playerName = playerName[QW_BOT_PREFIX.Length..];
                 return new PlayerSnapshot()
                 {
                     FeatureFlags = PlayerSnapshotFeatureFlags.Clothes,
@@ -75,7 +81,8 @@ public class QuakeWorld : IServerInfoProvider
                     NameRaw = playerName,
                     PlayTime = playerInfo.PlayMins == null ? new TimeSpan(0) : TimeSpan.FromMinutes(int.Parse(playerInfo.PlayMins)),
                     Ping = int.Parse(playerInfo.Ping),
-                    Frags = int.Parse(playerInfo.Frags)
+                    Frags = int.Parse(playerInfo.Frags),
+                    PlayerType = isBot ? PlayerType.Bot : PlayerType.Normal
                 };
             })
             .ToArray();
