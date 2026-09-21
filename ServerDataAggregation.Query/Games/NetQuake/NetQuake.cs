@@ -129,12 +129,18 @@ public class NetQuake : IServerInfoProvider
         playerSnapshot.PantColor = (int)pReplyPacket.PantColor;
         playerSnapshot.ShirtColor = (int)pReplyPacket.ShirtColor;
         playerSnapshot.PlayTime = TimeSpan.FromSeconds(pReplyPacket.PlayTime);
-        playerSnapshot.PlayerType = pReplyPacket.Address == "Bot" || (playerSnapshot.Name?.ToLower().StartsWith("[bot]") ?? false)
+        playerSnapshot.PlayerType = IsBotAddress(pReplyPacket.Address) || (playerSnapshot.Name?.ToLower().StartsWith("[bot]") ?? false)
             ? PlayerType.Bot
             : PlayerType.Normal;
 
         return playerSnapshot;
     }
+
+    // QSS-M reports "Bot", FTE reports "prot bot "
+    private static bool IsBotAddress(string? address) =>
+        address != null &&
+        (address.Equals("Bot", StringComparison.OrdinalIgnoreCase)
+         || address.Trim().EndsWith(" bot", StringComparison.OrdinalIgnoreCase));
 
 }
 
